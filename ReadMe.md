@@ -1,0 +1,2 @@
+
+Java [implementation](https://github.com/stefanpenner/es6-promise/blob/master/lib/es6-promise/promise.js) of [ES6 Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise) 
