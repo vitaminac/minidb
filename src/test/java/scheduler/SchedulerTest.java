@@ -1,19 +1,22 @@
 package scheduler;
 
-import promise.Promise;
 import org.junit.Test;
+import promise.Promise;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
+import static scheduler.Scheduler.run;
+import static scheduler.Scheduler.setTimeout;
 
 public class SchedulerTest {
+
     @Test
     public void test() {
         List<Integer> order = new ArrayList<>();
-        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> Scheduler.defer(() -> {
+        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
             order.add(6);
             resolver.resolve(6);
         }, 2000)).onFulfilled(value -> {
@@ -30,7 +33,7 @@ public class SchedulerTest {
             return 10;
         }).onFinally(() -> order.add(11));
 
-        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> Scheduler.defer(() -> {
+        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
             order.add(1);
             rejecter.reject(new Exception("1"));
         }, 1500)).then(result -> {
@@ -44,10 +47,21 @@ public class SchedulerTest {
             return 4;
         }).onFinally(() -> order.add(5));
 
-        Scheduler.run();
+        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
+            order.add(12);
+            rejecter.reject(new Exception("from here"));
+        }, 3000)).onFulfilled(result -> {
+            order.add(13);
+            return 13;
+        }).onRejected(e -> {
+            order.add(14);
+            return 14;
+        });
+
+        run();
         int[] result = order.stream().mapToInt(i -> i).toArray();
         System.out.println(Arrays.toString(result));
-        assertArrayEquals(new int[]{1, 3, 5, 6, 7, 8, 9, 11}, result);
+        assertArrayEquals(new int[]{1, 3, 5, 6, 7, 8, 9, 11, 12, 14}, result);
     }
 
 }

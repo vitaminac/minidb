@@ -1,5 +1,5 @@
 package scheduler;
 
 public interface Task {
-    void doTask();
+    void doTask() throws Exception;
 }
