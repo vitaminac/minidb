@@ -28,20 +28,26 @@ public class Scheduler {
         tasks.add(scheduledTask);
     }
 
+    public static synchronized void repeat(Task task, int period) {
+        defer(new Task() {
+            @Override
+            public void doTask() {
+                task.doTask();
+                defer(this, period);
+            }
+        }, period);
+    }
+
     public static void run() {
         while (!tasks.isEmpty()) {
             final ScheduledTask task = tasks.remove();
             try {
-                long ms;
-                do {
+                long ms = task.getWaitingTime();
+                while (ms > 0) {
+                    Thread.sleep(ms);
                     ms = task.getWaitingTime();
-                    if (ms <= 0) {
-                        task.doTask();
-                        break;
-                    } else {
-                        Thread.sleep(ms);
-                    }
-                } while (true);
+                }
+                task.doTask();
             } catch (Exception e) {
                 e.printStackTrace();
             }
