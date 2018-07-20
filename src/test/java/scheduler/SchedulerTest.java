@@ -1,6 +1,6 @@
-package async;
+package scheduler;
 
-import async.promise.Promise;
+import promise.Promise;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -9,11 +9,11 @@ import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
 
-public class AsyncExecutorTest {
+public class SchedulerTest {
     @Test
     public void test() {
         List<Integer> order = new ArrayList<>();
-        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> AsyncExecutor.defer(() -> {
+        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> Scheduler.defer(() -> {
             order.add(6);
             resolver.resolve(6);
         }, 2000)).onFulfilled(value -> {
@@ -30,7 +30,7 @@ public class AsyncExecutorTest {
             return 10;
         }).onFinally(() -> order.add(11));
 
-        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> AsyncExecutor.defer(() -> {
+        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> Scheduler.defer(() -> {
             order.add(1);
             rejecter.reject(new Exception("1"));
         }, 1500)).then(result -> {
@@ -44,7 +44,7 @@ public class AsyncExecutorTest {
             return 4;
         }).onFinally(() -> order.add(5));
 
-        AsyncExecutor.run();
+        Scheduler.run();
         int[] result = order.stream().mapToInt(i -> i).toArray();
         System.out.println(Arrays.toString(result));
         assertArrayEquals(new int[]{1, 3, 5, 6, 7, 8, 9, 11}, result);

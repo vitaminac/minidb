@@ -1,7 +1,6 @@
-package async.promise;
+package promise;
 
-import async.DeferredTask;
-import async.Task;
+import scheduler.DeferredTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +19,7 @@ public class Promise<T> implements Resolver<T>, Rejecter {
         private void propagate(P value) {
             if (this.onFulfilledHandler != null) {
                 try {
-                    this.resolve(onFulfilledHandler.pass(value));
+                    this.resolve(onFulfilledHandler.doNext(value));
                 } catch (Exception e) {
                     this.reject(e);
                 }
@@ -32,7 +31,7 @@ public class Promise<T> implements Resolver<T>, Rejecter {
         private void propagate(Throwable reason) {
             if (this.onRejectedHandler != null) {
                 try {
-                    this.resolve(this.onRejectedHandler.pass(reason));
+                    this.resolve(this.onRejectedHandler.doCatch(reason));
                 } catch (Exception e) {
                     this.reject(e);
                 }
@@ -62,17 +61,17 @@ public class Promise<T> implements Resolver<T>, Rejecter {
         this.state = State.Pending;
     }
 
-    public void onFinally(Task task) {
+    public void onFinally(OnFinallyHandler handler) {
         this.then(new OnFulfilledHandler<T, Object>() {
             @Override
-            public final Object pass(Object result) {
-                task.doTask();
+            public final Object doNext(Object result) {
+                handler.doFinally();
                 return null;
             }
         }, new OnRejectedHandler<Object>() {
             @Override
-            public final Object pass(Throwable e) {
-                task.doTask();
+            public final Object doCatch(Throwable e) {
+                handler.doFinally();
                 return null;
             }
         });

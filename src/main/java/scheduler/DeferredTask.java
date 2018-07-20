@@ -1,7 +1,7 @@
-package async;
+package scheduler;
 
-import async.promise.Rejecter;
-import async.promise.Resolver;
+import promise.Rejecter;
+import promise.Resolver;
 
 public interface DeferredTask<T> {
     void start(Resolver<T> resolver, Rejecter rejecter);

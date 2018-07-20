@@ -1,10 +1,10 @@
-package async;
+package scheduler;
 
 import java.util.Date;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-public class AsyncExecutor {
+public class Scheduler {
     public final static Queue<ScheduledTask> tasks;
 
     static {
