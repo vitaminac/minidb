@@ -1,7 +1,9 @@
 package observer;
 
-public interface Publisher<E extends Event> {
-    void publish(Event event);
+import event.Event;
 
-    void subscribe(Subscriber<? extends E> subscriber);
+public interface Publisher<E extends Event> {
+    void publish(E event);
+
+    void subscribe(Subscriber<? super E> subscriber);
 }
