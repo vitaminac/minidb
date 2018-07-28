@@ -1,7 +1,5 @@
 package observer;
 
-import event.Event;
-
-public interface Subscriber<E extends Event> {
-    void notify(E event) throws Exception;
+public interface Subscriber<Event> {
+    void notify(Event event) throws Exception;
 }
