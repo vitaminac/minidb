@@ -1,8 +1,13 @@
 package scheduler;
 
+import nio.DataHandler;
+import nio.NIOServerSocket;
 import org.junit.Test;
 import promise.Promise;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +17,23 @@ import static scheduler.Scheduler.run;
 import static scheduler.Scheduler.setTimeout;
 
 public class SchedulerTest {
+    private static final int PORT = 1338;
+
+    @Test
+    public void testEventLoop() throws Exception {
+        NIOServerSocket.create(PORT, socket -> socket.onRead(new DataHandler() {
+            private StringBuilder sb = new StringBuilder();
+
+            @Override
+            public void onData(ByteBuffer data) {
+                CharBuffer charBuffer = StandardCharsets.UTF_8.decode(data);
+                String text = charBuffer.toString();
+                sb.append(text);
+                System.out.println(sb.toString());
+            }
+        }));
+        run();
+    }
 
     @Test
     public void test() {
@@ -63,5 +85,4 @@ public class SchedulerTest {
         System.out.println(Arrays.toString(result));
         assertArrayEquals(new int[]{1, 3, 5, 6, 7, 8, 9, 11, 12, 14}, result);
     }
-
 }
