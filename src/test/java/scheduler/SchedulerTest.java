@@ -21,7 +21,7 @@ public class SchedulerTest {
 
     @Test
     public void testEventLoop() throws Exception {
-        NIOServerSocket.create(PORT, socket -> socket.onRead(new DataHandler() {
+        NIOServerSocket.listen(PORT, socket -> socket.onRead(new DataHandler() {
             private StringBuilder sb = new StringBuilder();
 
             @Override

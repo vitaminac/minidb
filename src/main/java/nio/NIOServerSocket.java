@@ -34,7 +34,7 @@ public class NIOServerSocket implements NIOSelectable {
         }
     }
 
-    public static NIOServerSocket create(int port, ConnectionHandler handler) throws IOException {
+    public static NIOServerSocket listen(int port, ConnectionHandler handler) throws IOException {
         InetSocketAddress address = new InetSocketAddress(port);
         EventLoop loop = EventLoop.DEFAULT_EVENT_LOOP;
         ServerSocketChannel ssc = ServerSocketChannel.open();
