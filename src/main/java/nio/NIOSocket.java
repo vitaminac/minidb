@@ -7,34 +7,31 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 
-public class NIOSocket implements NIOSelectable {
-    private final EventLoop loop;
-    private final SocketChannel channel;
-    private DataHandler onReadHandler;
-
-    private NIOSocket(EventLoop loop, SocketChannel sc) throws IOException {
-        this.loop = loop;
-        this.channel = sc;
-        loop.register(this, new IOEvent<>(sc, IOEvent.READ));
+public class NIOSocket implements SelectHandler {
+    public static NIOSocket create(EventLoop loop, SocketChannel sc, SocketHandler socketHandler) throws IOException {
+        return new NIOSocket(loop, sc, socketHandler);
     }
 
-    public void onRead(DataHandler handler) {
-        this.onReadHandler = handler;
+    private final EventLoop loop;
+    private final SocketHandler socketHandler;
+
+    private NIOSocket(EventLoop loop, SocketChannel sc, SocketHandler socketHandler) throws IOException {
+        this.loop = loop;
+        sc.configureBlocking(false);
+        this.socketHandler = socketHandler;
+        loop.register(this, sc, SelectionKey.OP_READ, SelectionKey.OP_WRITE);
     }
 
     @Override
-    public void onSelect(IOEvent<SelectionKey> event) throws IOException {
-        if (event.canRead()) {
-            final SelectionKey key = event.getSource();
+    public void select(SelectionKey key) throws IOException {
+        if (key.isReadable()) {
             final SocketChannel sc = (SocketChannel) key.channel();
             // TODO: magic const
             ByteBuffer buffer = ByteBuffer.allocate(1024);
             int n = sc.read(buffer);
             while (n > 0) {
                 buffer.flip();
-                if (this.onReadHandler != null) {
-                    onReadHandler.onData(buffer.asReadOnlyBuffer());
-                }
+                this.socketHandler.onData(buffer.asReadOnlyBuffer());
                 n = sc.read(buffer);
             }
             if (n < 0) {
@@ -43,8 +40,8 @@ public class NIOSocket implements NIOSelectable {
         }
     }
 
-    public static NIOSocket wrap(EventLoop loop, SocketChannel sc) throws IOException {
-        sc.configureBlocking(false);
-        return new NIOSocket(loop, sc);
+    @Override
+    public void close() {
+        this.socketHandler.onClose();
     }
 }

@@ -1,7 +1,8 @@
 package scheduler;
 
-import nio.DataHandler;
 import nio.NIOServerSocket;
+import nio.ServerSocketHandler;
+import nio.SocketHandler;
 import org.junit.Test;
 import promise.Promise;
 
@@ -21,17 +22,33 @@ public class SchedulerTest {
 
     @Test
     public void testEventLoop() throws Exception {
-        NIOServerSocket.listen(PORT, socket -> socket.onRead(new DataHandler() {
-            private StringBuilder sb = new StringBuilder();
+        NIOServerSocket.listen(PORT, new ServerSocketHandler() {
+                    @Override
+                    public void onClose() {
+                        System.out.println("Closing server");
+                    }
 
-            @Override
-            public void onData(ByteBuffer data) {
-                CharBuffer charBuffer = StandardCharsets.UTF_8.decode(data);
-                String text = charBuffer.toString();
-                sb.append(text);
-                System.out.println(sb.toString());
-            }
-        }));
+                    @Override
+                    public SocketHandler buildSocketHandler() {
+                        return new SocketHandler() {
+                            private final StringBuilder sb = new StringBuilder();
+
+                            @Override
+                            public void onData(ByteBuffer data) {
+                                CharBuffer charBuffer = StandardCharsets.UTF_8.decode(data);
+                                String text = charBuffer.toString();
+                                sb.append(text);
+                            }
+
+                            @Override
+                            public void onClose() {
+                                System.out.println(sb.toString());
+
+                            }
+                        };
+                    }
+                }
+        );
         run();
     }
 

@@ -8,39 +8,43 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-public class NIOServerSocket implements NIOSelectable {
+public class NIOServerSocket implements SelectHandler {
     private final EventLoop loop;
     private final ServerSocketChannel ssc;
-    private ConnectionHandler handler;
+    private ServerSocketHandler handler;
 
-    private NIOServerSocket(EventLoop loop, ServerSocketChannel ssc, ConnectionHandler handler) throws IOException {
+    private NIOServerSocket(EventLoop loop, ServerSocketChannel ssc, ServerSocketHandler handler) throws IOException {
         this.ssc = ssc;
+        this.ssc.configureBlocking(false);
         this.loop = loop;
         this.handler = handler;
-        loop.register(this, new IOEvent<>(ssc, IOEvent.ACCEPT));
+        loop.register(this, ssc, SelectionKey.OP_ACCEPT);
     }
 
     @Override
-    public void onSelect(IOEvent<SelectionKey> event) throws IOException {
-        if (event.canAccept()) {
-            final SelectionKey key = event.getSource();
+    public void select(SelectionKey key) throws IOException {
+        if (key.isAcceptable()) {
             final ServerSocketChannel ssc = (ServerSocketChannel) key.channel();
             final SocketChannel sc = ssc.accept();
             sc.configureBlocking(false);
-            final NIOSocket socket = NIOSocket.wrap(this.loop, sc);
-            if (this.handler != null) {
-                handler.onConnect(socket);
-            }
+            NIOSocket.create(this.loop, sc, this.handler.buildSocketHandler());
         }
     }
 
-    public static NIOServerSocket listen(int port, ConnectionHandler handler) throws IOException {
-        InetSocketAddress address = new InetSocketAddress(port);
-        EventLoop loop = EventLoop.DEFAULT_EVENT_LOOP;
-        ServerSocketChannel ssc = ServerSocketChannel.open();
-        ssc.configureBlocking(false);
+    public static NIOServerSocket listen(EventLoop loop, int port, ServerSocketHandler handler) throws IOException {
+        var address = new InetSocketAddress(port);
+        var ssc = ServerSocketChannel.open();
         ssc.socket().bind(address);
-        final NIOServerSocket serverSocket = new NIOServerSocket(EventLoop.DEFAULT_EVENT_LOOP, ssc, handler);
+        final var serverSocket = new NIOServerSocket(loop, ssc, handler);
         return serverSocket;
+    }
+
+    public static NIOServerSocket listen(int port, ServerSocketHandler handler) throws IOException {
+        return listen(EventLoop.DEFAULT_EVENT_LOOP, port, handler);
+    }
+
+    @Override
+    public void close() {
+        this.handler.onClose();
     }
 }

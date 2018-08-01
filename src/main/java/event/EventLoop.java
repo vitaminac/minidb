@@ -1,7 +1,6 @@
 package event;
 
-import nio.IOEvent;
-import nio.NIOSelectable;
+import nio.SelectHandler;
 import util.Logger;
 
 import java.io.IOException;
@@ -29,7 +28,7 @@ public class EventLoop {
     }
 
     private final Logger logger = new Logger(this.getClass());
-    private final HashMap<SelectionKey, NIOSelectable> handlers;
+    private final HashMap<SelectionKey, SelectHandler> handlers;
     private final Selector selector;
 
     public EventLoop(Selector selector) {
@@ -52,10 +51,10 @@ public class EventLoop {
                 while (it.hasNext()) {
                     final SelectionKey key = it.next();
                     if (key.isValid() && key.channel().isOpen()) {
-                        final NIOSelectable handler = this.handlers.get(key);
+                        final SelectHandler handler = this.handlers.get(key);
                         if (handler != null) {
                             try {
-                                handler.onSelect(new IOEvent<>(key, key.readyOps()));
+                                handler.select(key);
                             } catch (Exception e) {
                                 this.unregister(key);
                                 logger.error(e);
@@ -73,14 +72,23 @@ public class EventLoop {
         }
     }
 
-    public void register(NIOSelectable handler, IOEvent<SelectableChannel> event) throws ClosedChannelException {
-        final SelectionKey key = event.getSource().register(selector, event.getOpCode());
+    public void register(SelectHandler handler, SelectableChannel channel, int... ops) throws ClosedChannelException {
+        var watch = 0;
+        for (var op : ops) {
+            watch |= op;
+        }
+        final SelectionKey key = channel.register(selector, watch);
         this.handlers.put(key, handler);
     }
 
     public void unregister(SelectionKey key) {
         key.cancel();
-        this.handlers.remove(key);
+        final SelectHandler handler = this.handlers.remove(key);
+        try {
+            handler.close();
+        } catch (IOException e) {
+            logger.error(e);
+        }
     }
 
     public boolean isIdle() {
