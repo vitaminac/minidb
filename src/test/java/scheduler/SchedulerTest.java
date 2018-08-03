@@ -55,7 +55,7 @@ public class SchedulerTest {
     @Test
     public void test() {
         List<Integer> order = new ArrayList<>();
-        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
+        Promise.from((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
             order.add(6);
             resolver.resolve(6);
         }, 2000)).onFulfilled(value -> {
@@ -72,7 +72,7 @@ public class SchedulerTest {
             return 10;
         }).onFinally(() -> order.add(11));
 
-        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
+        Promise.from((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
             order.add(1);
             rejecter.reject(new Exception("1"));
         }, 1500)).then(result -> {
@@ -86,7 +86,7 @@ public class SchedulerTest {
             return 4;
         }).onFinally(() -> order.add(5));
 
-        Promise.create((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
+        Promise.from((DeferredTask<Integer>) (resolver, rejecter) -> setTimeout(() -> {
             order.add(12);
             rejecter.reject(new Exception("from here"));
         }, 3000)).onFulfilled(result -> {

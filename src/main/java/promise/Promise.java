@@ -41,9 +41,9 @@ public class Promise<T> implements Resolver<T>, Rejecter {
         }
     }
 
-    public static <T> Promise<T> create(DeferredTask<T> callBack) {
+    public static <T> Promise<T> from(DeferredTask<T> callBack) {
         final Promise<T> promise = new Promise<>();
-        callBack.start(promise, promise);
+        callBack.start(promise);
         return promise;
     }
 

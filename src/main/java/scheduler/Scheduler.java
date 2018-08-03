@@ -1,12 +1,22 @@
 package scheduler;
 
 import event.EventLoop;
+import promise.Promise;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayDeque;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
     private static final Scheduler Default_Scheduler;
@@ -41,6 +51,8 @@ public class Scheduler {
 
     private final Queue<Task> pending;
     private final Queue<ScheduledTask> timers;
+    private final HashMap<Future<?>, Task> futures;
+    private final ExecutorService executor;
     private final EventLoop loop;
     private long now;
 
@@ -48,6 +60,8 @@ public class Scheduler {
         this.timers = new PriorityQueue<>();
         this.pending = new ArrayDeque<>();
         this.loop = loop;
+        this.futures = new HashMap<>();
+        this.executor = new ThreadPoolExecutor(15, 30, 1000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
     }
 
     public synchronized void addScheduledTask(ScheduledTask scheduledTask) {
@@ -65,6 +79,20 @@ public class Scheduler {
                 task.doJob();
             }
         });
+    }
+
+    public synchronized <T> Promise<T> when(Callable<T> callable) {
+        final Future<T> future = this.executor.submit(callable);
+        return Promise.from(promise -> this.futures.put(future, new Task() {
+            @Override
+            public void doJob() throws Exception {
+                if (future.isDone()) {
+                    promise.resolve(future.get());
+                } else if (future.isCancelled()) {
+                    promise.reject(new CancellationException());
+                }
+            }
+        }));
     }
 
     public void start() {
@@ -86,6 +114,18 @@ public class Scheduler {
             }
 
             // third phase
+            // check future
+            final Iterator<Map.Entry<Future<?>, Task>> it = this.futures.entrySet().iterator();
+            while (it.hasNext()) {
+                final var entry = it.next();
+                final Future<?> future = entry.getKey();
+                if (future.isDone() || future.isCancelled()) {
+                    this.pending.add(entry.getValue());
+                    it.remove();
+                }
+            }
+
+            // fourth phase
             // Pending callbacks are called
             while (!this.pending.isEmpty()) {
                 final Task task = this.pending.remove();

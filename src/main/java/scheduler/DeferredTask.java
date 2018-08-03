@@ -1,8 +1,7 @@
 package scheduler;
 
-import promise.Rejecter;
-import promise.Resolver;
+import promise.Promise;
 
 public interface DeferredTask<T> {
-    void start(Resolver<T> resolver, Rejecter rejecter);
+    void start(Promise<T> promise);
 }
