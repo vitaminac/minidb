@@ -1,5 +1,5 @@
 package observer;
 
 public interface Subscriber<Event> {
-    void notify(Event event) throws Exception;
+    void notify(Event event);
 }
