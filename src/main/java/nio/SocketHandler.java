@@ -1,5 +1,5 @@
 package nio;
 
-public interface SocketHandler extends DataHandler {
-    void onClose();
+public interface SocketHandler extends NIOHandler, DataHandler {
+    void onConnect();
 }

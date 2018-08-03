@@ -1,7 +1,5 @@
 package nio;
 
-public interface ServerSocketHandler {
-    void onClose();
-
+public interface ServerSocketHandler extends NIOHandler {
     SocketHandler buildSocketHandler();
 }
