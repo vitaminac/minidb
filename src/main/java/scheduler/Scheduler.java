@@ -19,29 +19,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
-    private static final Scheduler Default_Scheduler;
-
-    static {
-        Default_Scheduler = new Scheduler(EventLoop.DEFAULT_EVENT_LOOP);
-    }
-
-    public static synchronized void setTimeout(Task task, long millisecond) {
-        Default_Scheduler.defer(task, millisecond);
-    }
-
-    public static synchronized void setInterval(Task task, int period) {
-        Default_Scheduler.repeat(task, period);
-    }
-
-    public static synchronized void setImmediate(Task task) {
-        Default_Scheduler.arrange(task);
-    }
-
-    public static synchronized void run() {
-        Default_Scheduler.start();
-    }
-
-    public static long askUpTime() {
+    private static long askUpTime() {
         return ManagementFactory.getRuntimeMXBean().getUptime();
     }
 
@@ -56,7 +34,7 @@ public class Scheduler {
     private final EventLoop loop;
     private long now;
 
-    private Scheduler(EventLoop loop) {
+    public Scheduler(EventLoop loop) {
         this.timers = new PriorityQueue<>();
         this.pending = new ArrayDeque<>();
         this.loop = loop;
@@ -95,7 +73,7 @@ public class Scheduler {
         }));
     }
 
-    public void start() {
+    public void run() {
         // check if the loop is considered to be alive
         while (!this.pending.isEmpty() || !timers.isEmpty() || !this.loop.isIdle()) {
             // caches the current time at the start of the event loop tick
