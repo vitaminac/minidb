@@ -1,6 +1,6 @@
 package promise;
 
-import scheduler.DeferredTask;
+import scheduler.Executor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +41,9 @@ public class Promise<T> implements Resolver<T>, Rejecter {
         }
     }
 
-    public static <T> Promise<T> from(DeferredTask<T> callBack) {
+    public static <T> Promise<T> from(Executor<T> callBack) {
         final Promise<T> promise = new Promise<>();
-        callBack.start(promise);
+        callBack.execute(promise, promise);
         return promise;
     }
 

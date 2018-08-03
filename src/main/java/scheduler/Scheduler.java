@@ -61,13 +61,13 @@ public class Scheduler {
 
     public synchronized <T> Promise<T> when(Callable<T> callable) {
         final Future<T> future = this.executor.submit(callable);
-        return Promise.from(promise -> this.futures.put(future, new Task() {
+        return Promise.from((resolver, rejecter) -> this.futures.put(future, new Task() {
             @Override
             public void doJob() throws Exception {
                 if (future.isDone()) {
-                    promise.resolve(future.get());
+                    resolver.resolve(future.get());
                 } else if (future.isCancelled()) {
-                    promise.reject(new CancellationException());
+                    rejecter.reject(new CancellationException());
                 }
             }
         }));
@@ -76,7 +76,7 @@ public class Scheduler {
     public void run() {
         // check if the loop is considered to be alive
         while (!this.pending.isEmpty() || !timers.isEmpty() || !this.loop.isIdle()) {
-            // caches the current time at the start of the event loop tick
+            // caches the current time at the execute of the event loop tick
             // in order to reduce the number of time-related system calls
             this.updateTime();
 
