@@ -72,10 +72,10 @@ public class SchedulerTest {
 
     @Test
     public void setTimeoutTest() {
-        Promise.from((Executor<Integer>) (resolver, rejecter) -> setTimeout(() -> {
+        Promise.from(promise -> setTimeout(() -> {
             int retVal = 12;
             results.add(retVal);
-            rejecter.reject(new TestException(retVal));
+            promise.reject(new TestException(retVal));
         }, 501)).onFulfilled(result -> {
             int retVal = 13;
             results.add(retVal);
@@ -87,10 +87,10 @@ public class SchedulerTest {
             return retVal;
         });
 
-        Promise.from((Executor<Integer>) (resolver, rejecter) -> setTimeout(() -> {
+        Promise.from((Executor<Promise<Integer>>) promise -> setTimeout(() -> {
             int retVal = 6;
             results.add(retVal);
-            resolver.resolve(retVal);
+            promise.resolve(retVal);
         }, 500)).onFulfilled(result -> {
             assertEquals(6, result.intValue());
             int retVal = 7;
@@ -114,10 +114,10 @@ public class SchedulerTest {
 
     @Test
     public void setImmediateTest() {
-        Promise.from((Executor<Integer>) (resolver, rejecter) -> setImmediate(() -> {
+        Promise.from(promise -> setImmediate(() -> {
             int retVal = 1;
             results.add(retVal);
-            rejecter.reject(new TestException(retVal));
+            promise.reject(new TestException(retVal));
         })).then(result -> {
             results.add(2);
             return 2;

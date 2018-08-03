@@ -41,9 +41,9 @@ public class Promise<T> implements Resolver<T>, Rejecter {
         }
     }
 
-    public static <T> Promise<T> from(Executor<T> callBack) {
+    public static <T> Promise<T> from(Executor<Promise<T>> executor) {
         final Promise<T> promise = new Promise<>();
-        callBack.execute(promise, promise);
+        executor.execute(promise);
         return promise;
     }
 

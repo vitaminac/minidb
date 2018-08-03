@@ -1,8 +1,5 @@
 package scheduler;
 
-import promise.Rejecter;
-import promise.Resolver;
-
-public interface Executor<T> {
-    void execute(Resolver<T> resolver, Rejecter rejecter);
+public interface Executor<DTO> {
+    void execute(DTO dto);
 }

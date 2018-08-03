@@ -61,13 +61,13 @@ public class Scheduler {
 
     public synchronized <T> Promise<T> when(Callable<T> callable) {
         final Future<T> future = this.executor.submit(callable);
-        return Promise.from((resolver, rejecter) -> this.futures.put(future, new Task() {
+        return Promise.from(promise -> this.futures.put(future, new Task() {
             @Override
             public void doJob() throws Exception {
                 if (future.isDone()) {
-                    resolver.resolve(future.get());
+                    promise.resolve(future.get());
                 } else if (future.isCancelled()) {
-                    rejecter.reject(new CancellationException());
+                    promise.reject(new CancellationException());
                 }
             }
         }));
