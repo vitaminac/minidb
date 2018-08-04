@@ -26,7 +26,7 @@ public class DelegatingPromise<P, R> extends DeferredPromise<R> implements Promi
     }
 
     @Override
-    public void pipe(Throwable reason) {
+    public void pipe(Exception reason) {
         this.reject(reason);
     }
 

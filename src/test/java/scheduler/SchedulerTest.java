@@ -69,7 +69,7 @@ public class SchedulerTest {
     public static void tearDown() {
         run();
         System.out.println(results);
-        assertArrayEquals(new Object[]{1, 3, 5, 6, 7, 8, 9, 11, 15, 12, 14, 101, 102, 103, 16, 17}, results.toArray());
+        assertArrayEquals(new Object[]{1, 3, 5, 6, 7, 8, 9, 11, 15, 12, 14, 101, 102, 103, 16, 17, 105}, results.toArray());
     }
 
     @Test
@@ -165,6 +165,25 @@ public class SchedulerTest {
         final Promise<List<Integer>> all = Promise.all(Arrays.asList(p1, p2, p3));
         all.onFulfilled(integers -> {
             results.addAll(integers);
+            return null;
+        });
+    }
+
+    @Test
+    public void allPromisesAndThrow() {
+        final Promise<Integer> p1 = DeferredPromise.from(p -> setTimeout(() -> {
+            p.resolve(104);
+        }, 1100));
+        final Promise<Integer> p2 = DeferredPromise.from(p -> setTimeout(() -> {
+            p.reject(new TestException(105));
+        }, 900));
+        final Promise<Integer> p3 = DeferredPromise.from(p -> setTimeout(() -> p.resolve(106), 200));
+        final Promise<List<Integer>> all = Promise.all(Arrays.asList(p1, p2, p3));
+        all.then(integers -> {
+            results.addAll(integers);
+            return null;
+        }, e -> {
+            results.add(((TestException) e).getValue());
             return null;
         });
     }

@@ -48,7 +48,7 @@ public class DeferredPromise<D> implements Promise<D> {
     }
 
     @Override
-    public void reject(Throwable reason) {
+    public void reject(Exception reason) {
         this.state = State.Rejected;
         this.result = reason;
         for (PipedPromise<? super D, ?> next : this.chains) {
@@ -97,47 +97,56 @@ public class DeferredPromise<D> implements Promise<D> {
 
     @Override
     public <R> Promise<R> then(FulfilledHandler<? super D, R> fulfilledHandler, FailureHandler<R> failureHandler) {
-        if (this.isPending()) {
-            final PipedValuePromise<? super D, R> promise = new PipedValuePromise<>(fulfilledHandler, failureHandler);
-            this.chains.add(promise);
-            return promise;
-        } else {
-            final DeferredPromise<R> ret = new DeferredPromise<>();
-            try {
-                final Optional<D> result = this.getResult();
-                R nextResult;
-                if (result.isPresent()) {
-                    nextResult = fulfilledHandler.doNext(result.get());
+        final DeferredPromise<R> ret = new DeferredPromise<>();
+        switch (this.state) {
+            case Fulfilled:
+                if (fulfilledHandler != null) {
+                    try {
+                        ret.resolve(fulfilledHandler.doNext((D) this.result));
+                    } catch (Exception e) {
+                        ret.reject(e);
+                    }
                 } else {
-                    nextResult = fulfilledHandler.doNext(null);
+                    ret.resolve(null);
                 }
-                ret.resolve(nextResult);
-            } catch (Exception e) {
-                ret.reject(e);
-            }
-            return ret;
+                return ret;
+            case Rejected:
+                if (failureHandler != null) {
+                    try {
+                        ret.resolve(failureHandler.doCatch((Exception) this.result));
+                    } catch (Exception e) {
+                        ret.reject(e);
+                    }
+                } else {
+                    ret.resolve(null);
+                }
+                return ret;
+            default:
+                final PipedValuePromise<? super D, R> promise = new PipedValuePromise<>(fulfilledHandler, failureHandler);
+                this.chains.add(promise);
+                return promise;
         }
     }
 
     @Override
     public <R> Promise<R> then(Delegate<D, Promise<R>, Exception> delegate) {
-        if (this.isPending()) {
-            final DelegatingPromise<D, R> promise = DelegatingPromise.from(delegate);
-            this.chains.add(promise);
-            return promise;
-        } else {
-            try {
-                final Optional<D> result = this.getResult();
-                if (result.isPresent()) {
-                    return delegate.delegate(result.get());
-                } else {
-                    return delegate.delegate(null);
+        switch (this.state) {
+            case Fulfilled:
+                try {
+                    return delegate.delegate((D) this.result);
+                } catch (Exception e) {
+                    final DeferredPromise<R> ret = new DeferredPromise<>();
+                    ret.reject(e);
+                    return ret;
                 }
-            } catch (Exception e) {
+            case Rejected:
                 final DeferredPromise<R> ret = new DeferredPromise<>();
-                ret.reject(e);
+                ret.reject((Exception) this.result);
                 return ret;
-            }
+            default:
+                final DelegatingPromise<D, R> promise = DelegatingPromise.from(delegate);
+                this.chains.add(promise);
+                return promise;
         }
     }
 }

@@ -23,7 +23,7 @@ class PipedValuePromise<P, R> extends DeferredPromise<R> implements PipedPromise
     }
 
     @Override
-    public void pipe(Throwable reason) {
+    public void pipe(Exception reason) {
         if (this.failureHandler != null) {
             try {
                 this.resolve(this.failureHandler.doCatch(reason));
