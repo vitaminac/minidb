@@ -1,5 +1,5 @@
 package promise;
 
-public interface OnFulfilledHandler<P, R> {
+public interface FulfilledHandler<P, R> {
     R doNext(P result) throws Exception;
 }

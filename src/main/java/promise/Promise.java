@@ -1,111 +1,29 @@
 package promise;
 
-import scheduler.Executor;
+import scheduler.Delegate;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 
-public class Promise<T> implements Resolver<T>, Rejecter {
+public interface Promise<Thing> {
+    boolean isDone();
 
-    private static class NextPromise<P, R> extends Promise<R> {
-        private final OnFulfilledHandler<P, R> onFulfilledHandler;
-        private final OnRejectedHandler<R> onRejectedHandler;
+    boolean isFailed();
 
-        private NextPromise(OnFulfilledHandler<P, R> onFulfilledHandler, OnRejectedHandler<R> onRejectedHandler) {
-            this.onFulfilledHandler = onFulfilledHandler;
-            this.onRejectedHandler = onRejectedHandler;
-        }
+    boolean isPending();
 
-        private void propagate(P value) {
-            if (this.onFulfilledHandler != null) {
-                try {
-                    this.resolve(onFulfilledHandler.doNext(value));
-                } catch (Exception e) {
-                    this.reject(e);
-                }
-            } else {
-                this.resolve(null);
-            }
-        }
+    Optional<Thing> getResult() throws Exception;
 
-        private void propagate(Throwable reason) {
-            if (this.onRejectedHandler != null) {
-                try {
-                    this.resolve(this.onRejectedHandler.doCatch(reason));
-                } catch (Exception e) {
-                    this.reject(e);
-                }
-            } else {
-                this.reject(reason);
-            }
-        }
-    }
+    void resolve(Thing thing);
 
-    public static <T> Promise<T> from(Executor<Promise<T>> executor) {
-        final Promise<T> promise = new Promise<>();
-        executor.execute(promise);
-        return promise;
-    }
+    void reject(Throwable reason);
 
-    public enum State {
-        Pending, // initial state, neither fulfilled nor rejected.
-        Fulfilled, // meaning that the operation completed successfully.
-        Rejected // meaning that the operation failed.
-    }
+    <R> Promise<R> onFulfilled(FulfilledHandler<? super Thing, R> handler);
 
-    private State state;
-    private Object result;
-    private List<NextPromise<? super T, ?>> chains = new ArrayList<>();
+    <R> Promise<R> onRejected(FailureHandler<R> handler);
 
-    private Promise() {
-        this.state = State.Pending;
-    }
+    <R> Promise<R> then(FulfilledHandler<? super Thing, R> fulfilledHandler, FailureHandler<R> failureHandler);
 
-    public void onFinally(OnFinallyHandler handler) {
-        this.then(new OnFulfilledHandler<T, Object>() {
-            @Override
-            public final Object doNext(Object result) {
-                handler.doFinally();
-                return null;
-            }
-        }, new OnRejectedHandler<Object>() {
-            @Override
-            public final Object doCatch(Throwable e) {
-                handler.doFinally();
-                return null;
-            }
-        });
-    }
+    <R> Promise<R> then(Delegate<Thing, Promise<R>, Exception> delegate);
 
-    public <R> Promise<R> onFulfilled(OnFulfilledHandler<? super T, R> handler) {
-        return this.then(handler, null);
-    }
-
-    public <R> Promise<R> onRejected(OnRejectedHandler<R> handler) {
-        return this.then(null, handler);
-    }
-
-    @Override
-    public void reject(Throwable reason) {
-        this.state = State.Rejected;
-        this.result = reason;
-        for (NextPromise<? super T, ?> next : this.chains) {
-            next.propagate(reason);
-        }
-    }
-
-    @Override
-    public void resolve(T result) {
-        this.state = State.Fulfilled;
-        this.result = result;
-        for (NextPromise<? super T, ?> next : this.chains) {
-            next.propagate(result);
-        }
-    }
-
-    public <R> Promise<R> then(OnFulfilledHandler<? super T, R> onFulfilledHandler, OnRejectedHandler<R> onRejectedHandler) {
-        final NextPromise<? super T, R> promise = new NextPromise<>(onFulfilledHandler, onRejectedHandler);
-        this.chains.add(promise);
-        return promise;
-    }
+    void onFinally(DoneCallback callback);
 }

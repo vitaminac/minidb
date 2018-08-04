@@ -1,5 +1,5 @@
 package promise;
 
-public interface OnRejectedHandler<R> {
+public interface FailureHandler<R> {
     R doCatch(Throwable e) throws Exception;
 }

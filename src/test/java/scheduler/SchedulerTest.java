@@ -3,6 +3,7 @@ package scheduler;
 import nio.NIOServerSocket;
 import org.junit.AfterClass;
 import org.junit.Test;
+import promise.DeferredPromise;
 import promise.Promise;
 
 import java.util.ArrayList;
@@ -67,16 +68,16 @@ public class SchedulerTest {
     public static void tearDown() {
         run();
         System.out.println(results);
-        assertArrayEquals(new Object[]{1, 3, 5, 6, 7, 8, 9, 11, 12, 14}, results.toArray());
+        assertArrayEquals(new Object[]{1, 3, 5, 6, 7, 8, 9, 11, 15, 12, 14, 16, 17}, results.toArray());
     }
 
     @Test
     public void setTimeoutTest() {
-        Promise.from(promise -> setTimeout(() -> {
+        DeferredPromise.from(promise -> setTimeout(() -> {
             int retVal = 12;
             results.add(retVal);
             promise.reject(new TestException(retVal));
-        }, 501)).onFulfilled(result -> {
+        }, 600)).onFulfilled(result -> {
             int retVal = 13;
             results.add(retVal);
             return retVal;
@@ -87,7 +88,7 @@ public class SchedulerTest {
             return retVal;
         });
 
-        Promise.from((Executor<Promise<Integer>>) promise -> setTimeout(() -> {
+        DeferredPromise.from((Executor<Promise<Integer>>) promise -> setTimeout(() -> {
             int retVal = 6;
             results.add(retVal);
             promise.resolve(retVal);
@@ -114,7 +115,7 @@ public class SchedulerTest {
 
     @Test
     public void setImmediateTest() {
-        Promise.from(promise -> setImmediate(() -> {
+        DeferredPromise.from(promise -> setImmediate(() -> {
             int retVal = 1;
             results.add(retVal);
             promise.reject(new TestException(retVal));
@@ -131,5 +132,27 @@ public class SchedulerTest {
             results.add(retVal);
             return retVal;
         }).onFinally(() -> results.add(5));
+    }
+
+    @Test
+    public void thenTest() {
+        final Promise<Integer> p = DeferredPromise.from((Executor<Promise<Integer>>) promise -> setTimeout(() -> {
+            int retVal = 15;
+            results.add(retVal);
+            promise.resolve(retVal);
+        }, 550)).then(i -> {
+            return DeferredPromise.from(promise -> setTimeout(() -> {
+                int retVal = i + 1;
+                results.add(retVal);
+                assertEquals(retVal, 16);
+                promise.resolve(retVal);
+            }, 500));
+        });
+        p.onFulfilled((i) -> {
+            int retVal = i + 1;
+            assertEquals(17, retVal);
+            results.add(retVal);
+            return retVal;
+        });
     }
 }

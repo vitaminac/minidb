@@ -1,7 +1,7 @@
 package scheduler;
 
 import event.EventLoop;
-import promise.Promise;
+import promise.DeferredPromise;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayDeque;
@@ -59,9 +59,9 @@ public class Scheduler {
         });
     }
 
-    public synchronized <T> Promise<T> when(Callable<T> callable) {
+    public synchronized <T> DeferredPromise<T> when(Callable<T> callable) {
         final Future<T> future = this.executor.submit(callable);
-        return Promise.from(promise -> this.futures.put(future, new Task() {
+        return DeferredPromise.from(promise -> this.futures.put(future, new Task() {
             @Override
             public void doJob() throws Exception {
                 if (future.isDone()) {

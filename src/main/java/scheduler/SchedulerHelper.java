@@ -1,7 +1,7 @@
 package scheduler;
 
 import event.EventLoop;
-import promise.Promise;
+import promise.DeferredPromise;
 
 import java.util.concurrent.Callable;
 
@@ -29,7 +29,7 @@ public class SchedulerHelper {
         Default_Scheduler.run();
     }
 
-    public static synchronized <V> Promise<V> await(Callable<V> callable) {
+    public static synchronized <V> DeferredPromise<V> await(Callable<V> callable) {
         return Default_Scheduler.when(callable);
     }
 }
