@@ -1,11 +1,23 @@
 package scheduler;
 
+import nio.ConnectionHandler;
 import nio.NIOServerSocket;
+import nio.NIOSocket;
+import nio.ServerSocketHandler;
+import nio.ServerSocketWrapper;
+import nio.SocketHandler;
+import nio.SocketWrapper;
 import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import promise.DeferredPromise;
 import promise.Promise;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -17,59 +29,142 @@ import static scheduler.SchedulerHelper.setImmediate;
 import static scheduler.SchedulerHelper.setTimeout;
 
 public class SchedulerTest {
-    private static final int PORT = 1338;
-    private static List<Object> results = new ArrayList<>();
-    private NIOServerSocket server;
+    private static final int PORT = 13458;
+    private static List<Object> results = new ArrayList<Object>() {
+        @Override
+        public boolean add(Object o) {
+            System.out.println(o);
+            return super.add(o);
+        }
+    };
+    private static ServerSocketWrapper server;
 
-//    @Before
-//    public void setUp() throws Exception {
-//        this.server = NIOServerSocket.listen(PORT, new ServerSocketHandler() {
-//                    @Override
-//                    public void onError(Exception e) {
-//                        SchedulerTest.this.results.add("This should not be called\n");
-//                    }
-//
-//                    @Override
-//                    public void onClose() {
-//                        SchedulerTest.this.results.add("Closing server\n");
-//                    }
-//
-//                    @Override
-//                    public SocketHandler buildSocketHandler() {
-//                        return new SocketHandler() {
-//                            @Override
-//                            public void onConnect() {
-//                                SchedulerTest.this.sb.append("Connected to the server\n");
-//                            }
-//
-//
-//                            @Override
-//                            public void onData(ByteBuffer data) {
-//                                CharBuffer charBuffer = StandardCharsets.UTF_8.decode(data);
-//                                String text = charBuffer.toString();
-//                                SchedulerTest.this.sb.append(text);
-//                            }
-//
-//                            @Override
-//                            public void onError(Exception e) {
-//                                SchedulerTest.this.sb.append("This should not be called\n");
-//                            }
-//
-//                            @Override
-//                            public void onClose() {
-//                                SchedulerTest.this.sb.append("Closing the client\n");
-//                            }
-//                        };
-//                    }
-//                }
-//        );
-//    }
+    @BeforeClass
+    public static void setUp() throws Exception {
+        server = NIOServerSocket.listen(PORT, new ServerSocketHandler() {
+                    @Override
+                    public void onError(Exception e) {
+                        results.add(e.getMessage());
+                    }
+
+                    @Override
+                    public void onClose() {
+                        results.add("Closing server socket");
+                    }
+
+                    @Override
+                    public ConnectionHandler buildConnectionHandler() {
+                        results.add("Received connection from client");
+                        return new ConnectionHandler() {
+                            @Override
+                            public SocketHandler onConnect(SocketWrapper socket) {
+                                return new SocketHandler() {
+                                    private StringBuilder sb = new StringBuilder();
+
+                                    @Override
+                                    public void onClose() {
+                                        results.add("Closing the connection from client");
+                                    }
+
+                                    @Override
+                                    public void onData(ByteBuffer data) {
+                                        CharBuffer charBuffer = StandardCharsets.UTF_8.decode(data);
+                                        String text = charBuffer.toString();
+                                        this.sb.append(text);
+                                    }
+
+                                    @Override
+                                    public void onEnd() {
+                                        results.add(sb.toString());
+                                        try {
+                                            socket.write(sb.toString().getBytes());
+                                        } catch (IOException e) {
+                                            results.add(e.getMessage());
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onDrain() {
+                                        try {
+                                            socket.close();
+                                        } catch (IOException e) {
+                                            results.add(e.getMessage());
+                                        }
+                                    }
+                                };
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                results.add(e.getMessage());
+                            }
+                        };
+                    }
+                }
+        );
+    }
 
     @AfterClass
     public static void tearDown() {
+        setTimeout(() -> server.close(), 5000);
         run();
         System.out.println(results);
-        assertArrayEquals(new Object[]{1, 3, 5, 6, 7, 8, 9, 11, 15, 12, 14, 101, 102, 103, 16, 17, 105}, results.toArray());
+        assertArrayEquals(new Object[]{1, 3, 5, 6, 7, 8, 9, 11, 15, 12, 14, 101, 102, 103, 16, 17, 105, "Successfully connected to the server", "Received connection from client", "Closing the connection from server", "Sent from client", "Closing the connection from client", "Closing server socket"}, results.toArray());
+    }
+
+    @Test
+    public void socketTest() {
+        setTimeout(() -> {
+            NIOSocket.connect(new InetSocketAddress(PORT), new ConnectionHandler() {
+                @Override
+                public SocketHandler onConnect(SocketWrapper socket) {
+                    results.add("Successfully connected to the server");
+                    return new SocketHandler() {
+                        private StringBuilder sb = new StringBuilder();
+
+                        {
+                            try {
+                                socket.write("Sent from client".getBytes());
+                            } catch (IOException e) {
+                                results.add(e.getMessage());
+                            }
+                        }
+
+                        @Override
+                        public void onClose() {
+                            results.add("Closing the connection from server");
+                        }
+
+                        @Override
+                        public void onData(ByteBuffer data) {
+                            CharBuffer charBuffer = StandardCharsets.UTF_8.decode(data);
+                            String text = charBuffer.toString();
+                            this.sb.append(text);
+                        }
+
+                        @Override
+                        public void onEnd() {
+                            results.add(sb.toString());
+                        }
+
+                        @Override
+                        public void onDrain() {
+                            try {
+                                socket.shutdown();
+                                socket.close();
+                            } catch (IOException e) {
+                                results.add(e.getMessage());
+                            }
+                        }
+                    };
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    results.add(e.getMessage());
+                }
+            });
+        }, 2000);
     }
 
     @Test

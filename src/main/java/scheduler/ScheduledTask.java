@@ -1,6 +1,6 @@
 package scheduler;
 
-public abstract class ScheduledTask implements Comparable<ScheduledTask>, Task {
+public abstract class ScheduledTask implements Comparable<ScheduledTask>, Job {
     private long scheduleDate;
 
     public ScheduledTask(long scheduleDate) {

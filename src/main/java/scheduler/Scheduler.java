@@ -2,6 +2,7 @@ package scheduler;
 
 import event.EventLoop;
 import promise.DeferredPromise;
+import util.Logger;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayDeque;
@@ -23,15 +24,12 @@ public class Scheduler {
         return ManagementFactory.getRuntimeMXBean().getUptime();
     }
 
-    private static void log(Throwable e) {
-        e.printStackTrace();
-    }
-
-    private final Queue<Task> pending;
+    private final Queue<Job> pending;
     private final Queue<ScheduledTask> timers;
-    private final HashMap<Future<?>, Task> futures;
+    private final HashMap<Future<?>, Job> futures;
     private final ExecutorService executor;
     private final EventLoop loop;
+    private final Logger logger = new Logger(this.getClass());
     private long now;
 
     public Scheduler(EventLoop loop) {
@@ -46,22 +44,22 @@ public class Scheduler {
         this.timers.add(scheduledTask);
     }
 
-    public synchronized void arrange(Task task) {
-        this.pending.add(task);
+    public synchronized void arrange(Job job) {
+        this.pending.add(job);
     }
 
-    public synchronized void defer(Task task, long millisecond) {
+    public synchronized void defer(Job job, long millisecond) {
         this.schedule(new ScheduledTask(askUpTime() + millisecond) {
             @Override
             public void doJob() throws Exception {
-                task.doJob();
+                job.doJob();
             }
         });
     }
 
     public synchronized <T> DeferredPromise<T> when(Callable<T> callable) {
         final Future<T> future = this.executor.submit(callable);
-        return DeferredPromise.from(promise -> this.futures.put(future, new Task() {
+        return DeferredPromise.from(promise -> this.futures.put(future, new Job() {
             @Override
             public void doJob() throws Exception {
                 if (future.isDone()) {
@@ -88,14 +86,14 @@ public class Scheduler {
             // second phase
             // I/O polling
             if (!this.loop.isIdle()) {
-                this.loop.poll(timeout);
+                this.loop.poll(this.pending.isEmpty() ? timeout : 0);
             }
 
             // third phase
             // check future
-            final Iterator<Map.Entry<Future<?>, Task>> it = this.futures.entrySet().iterator();
+            final Iterator<Map.Entry<Future<?>, Job>> it = this.futures.entrySet().iterator();
             while (it.hasNext()) {
-                final var entry = it.next();
+                final Map.Entry<Future<?>, Job> entry = it.next();
                 final Future<?> future = entry.getKey();
                 if (future.isDone() || future.isCancelled()) {
                     this.pending.add(entry.getValue());
@@ -106,24 +104,35 @@ public class Scheduler {
             // fourth phase
             // Pending callbacks are called
             while (!this.pending.isEmpty()) {
-                final Task task = this.pending.remove();
+                final Job job = this.pending.remove();
                 try {
-                    task.doJob();
+                    job.doJob();
                 } catch (Exception e) {
-                    log(e);
+                    logger.error(e);
                 }
             }
         }
     }
 
-    public synchronized void repeat(Task task, int period) {
-        this.defer(new Task() {
+    public synchronized Task repeat(Job job, int period) {
+        Task task = new Task() {
+            private boolean cancelled = false;
+
+            @Override
+            public void cancel() {
+                this.cancelled = true;
+            }
+
             @Override
             public void doJob() throws Exception {
-                task.doJob();
-                defer(this, period);
+                if (!this.cancelled) {
+                    job.doJob();
+                    defer(this, period);
+                }
             }
-        }, period);
+        };
+        this.defer(task, period);
+        return task;
     }
 
     public synchronized void schedule(ScheduledTask task) {

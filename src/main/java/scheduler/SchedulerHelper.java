@@ -13,16 +13,16 @@ public class SchedulerHelper {
         Default_Scheduler = new Scheduler(EventLoop.DEFAULT_EVENT_LOOP);
     }
 
-    public static synchronized void setTimeout(Task task, long millisecond) {
-        Default_Scheduler.defer(task, millisecond);
+    public static synchronized void setTimeout(Job job, long millisecond) {
+        Default_Scheduler.defer(job, millisecond);
     }
 
-    public static synchronized void setInterval(Task task, int period) {
-        Default_Scheduler.repeat(task, period);
+    public static synchronized Task setInterval(Job job, int period) {
+        return Default_Scheduler.repeat(job, period);
     }
 
-    public static synchronized void setImmediate(Task task) {
-        Default_Scheduler.arrange(task);
+    public static synchronized void setImmediate(Job job) {
+        Default_Scheduler.arrange(job);
     }
 
     public static synchronized void run() {

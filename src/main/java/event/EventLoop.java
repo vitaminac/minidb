@@ -10,7 +10,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Set;
 
 public class EventLoop {
     public static final EventLoop DEFAULT_EVENT_LOOP;
@@ -46,24 +45,29 @@ public class EventLoop {
                 num = selector.selectNow();
             }
             if (num > 0) {
-                final Set<SelectionKey> selectedKeys = selector.selectedKeys();
-                final Iterator<SelectionKey> it = selectedKeys.iterator();
+                // we must use iterator and remove already processed key
+                final Iterator<SelectionKey> it = selector.selectedKeys().iterator();
                 while (it.hasNext()) {
                     final SelectionKey key = it.next();
                     if (key.isValid() && key.channel().isOpen()) {
                         final SelectHandler handler = this.handlers.get(key);
                         if (handler != null) {
                             try {
-                                handler.select(key);
+                                handler.select();
+                            } catch (IOException e) {
+                                handler.close();
+                                this.unregister(key);
+                                logger.error(e);
                             } catch (Exception e) {
                                 this.unregister(key);
                                 logger.error(e);
                             }
+                        } else {
+                            this.unregister(key);
                         }
                     } else {
                         this.unregister(key);
                     }
-                    // remove the processed SelectionKey
                     it.remove();
                 }
             }
@@ -72,23 +76,19 @@ public class EventLoop {
         }
     }
 
-    public void register(SelectHandler handler, SelectableChannel channel, int... ops) throws ClosedChannelException {
-        var watch = 0;
-        for (var op : ops) {
+    public SelectionKey register(SelectHandler handler, SelectableChannel channel, int... ops) throws ClosedChannelException {
+        int watch = 0;
+        for (int op : ops) {
             watch |= op;
         }
         final SelectionKey key = channel.register(selector, watch);
         this.handlers.put(key, handler);
+        return key;
     }
 
     public void unregister(SelectionKey key) {
         key.cancel();
-        final SelectHandler handler = this.handlers.remove(key);
-        try {
-            handler.close();
-        } catch (IOException e) {
-            logger.error(e);
-        }
+        this.handlers.remove(key);
     }
 
     public boolean isIdle() {
