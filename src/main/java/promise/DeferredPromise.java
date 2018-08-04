@@ -73,6 +73,9 @@ public class DeferredPromise<D> implements Promise<D> {
 
     @Override
     public Optional<D> getResult() throws Exception {
+        if (this.result == null) {
+            return Optional.empty();
+        }
         switch (this.state) {
             case Fulfilled:
                 return Optional.of((D) this.result);

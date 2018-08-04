@@ -7,6 +7,7 @@ import promise.DeferredPromise;
 import promise.Promise;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertArrayEquals;
@@ -68,7 +69,7 @@ public class SchedulerTest {
     public static void tearDown() {
         run();
         System.out.println(results);
-        assertArrayEquals(new Object[]{1, 3, 5, 6, 7, 8, 9, 11, 15, 12, 14, 16, 17}, results.toArray());
+        assertArrayEquals(new Object[]{1, 3, 5, 6, 7, 8, 9, 11, 15, 12, 14, 101, 102, 103, 16, 17}, results.toArray());
     }
 
     @Test
@@ -153,6 +154,18 @@ public class SchedulerTest {
             assertEquals(17, retVal);
             results.add(retVal);
             return retVal;
+        });
+    }
+
+    @Test
+    public void allPromisesTest() {
+        final Promise<Integer> p1 = DeferredPromise.from(p -> setTimeout(() -> p.resolve(101), 1000));
+        final Promise<Integer> p2 = DeferredPromise.from(p -> setTimeout(() -> p.resolve(102), 800));
+        final Promise<Integer> p3 = DeferredPromise.from(p -> setTimeout(() -> p.resolve(103), 100));
+        final Promise<List<Integer>> all = Promise.all(Arrays.asList(p1, p2, p3));
+        all.onFulfilled(integers -> {
+            results.addAll(integers);
+            return null;
         });
     }
 }
