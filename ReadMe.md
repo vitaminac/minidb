@@ -5,6 +5,7 @@ Minimum Database System Written in C
 ## Tutorial
 
 - [ ] [Redis源码分析](https://www.kancloud.cn/digest/redis-code/199030)
+- [ ] [Redis-Code](https://github.com/linyiqun/Redis-Code)
 - [ ] [Architecture of a Database System](http://db.cs.berkeley.edu/papers/fntdb07-architecture.pdf)
 - [ ] Inside SQLite
 
