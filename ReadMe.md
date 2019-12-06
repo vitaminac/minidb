@@ -25,7 +25,7 @@ Minimum Database System Written in C
 - [ ] [CMU 15-445/645 DATABASE SYSTEMS](https://15445.courses.cs.cmu.edu)
 - [ ] [CS 145 at Stanford: Data Management and Data Systems](https://cs145-fa19.github.io/)
 - [ ] [Coursera: Database Management Essentials](https://www.coursera.org/learn/database-management)
-- [ ] [Coursera: Database systems Specialization](https://www.coursera.org/specializations/database-systems)
+- [ ] [Coursera: Database Systems Specialization](https://www.coursera.org/specializations/database-systems)
 
 ## Source Code
 
