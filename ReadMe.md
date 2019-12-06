@@ -1,6 +1,6 @@
 # MiniDB
 
-Minimum Database System 
+Minimum Database System Written in C
 
 ## Tutorial
 
