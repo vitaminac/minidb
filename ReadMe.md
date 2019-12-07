@@ -1,7 +1,5 @@
 # MiniDB
 
-Minimum Database System Written in C
-
 ## Tutorial
 
 - [ ] [Redis源码分析](https://www.kancloud.cn/digest/redis-code/199030)
@@ -27,6 +25,7 @@ Minimum Database System Written in C
 - [ ] [CS 145 at Stanford: Data Management and Data Systems](https://cs145-fa19.github.io/)
 - [ ] [Coursera: Database Management Essentials](https://www.coursera.org/learn/database-management)
 - [ ] [Coursera: Database Systems Specialization](https://www.coursera.org/specializations/database-systems)
+- [ ] [Coursera: Parallel, Concurrent, and Distributed Programming in Java Specialization](https://www.coursera.org/specializations/pcdp)
 
 ## Source Code
 
