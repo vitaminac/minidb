@@ -12,11 +12,13 @@ public class MiniDBClient {
                     var reader = new Scanner(new BufferedReader(new InputStreamReader(socket.getInputStream())));
             ) {
                 while (!socket.isClosed()) {
-                    if (scanner.hasNext()) {
+                    if (scanner.hasNextLine()) {
                         var line = scanner.nextLine();
                         writer.println(line);
                         writer.flush();
-                        System.out.println(reader.nextLine());
+                        if (reader.hasNextLine()) {
+                            System.out.println(reader.nextLine());
+                        }
                     }
                 }
             }
