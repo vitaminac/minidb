@@ -19,9 +19,10 @@ public class MiniDBClient {
                         Result result;
                         var command = tokenizer.nextToken();
                         switch (command) {
-                            case "PING":
+                            case "PING": {
                                 result = conn.ping();
                                 break;
+                            }
                             case "SET": {
                                 var key = tokenizer.nextToken();
                                 var value = tokenizer.nextToken();
@@ -41,6 +42,33 @@ public class MiniDBClient {
                             case "EXISTS": {
                                 var key = tokenizer.nextToken();
                                 result = conn.exists(key);
+                                break;
+                            }
+                            case "LEN": {
+                                var key = tokenizer.nextToken();
+                                result = conn.length(key);
+                                break;
+                            }
+                            case "LPUSH": {
+                                var key = tokenizer.nextToken();
+                                var value = tokenizer.nextToken();
+                                result = conn.leftPush(key, value);
+                                break;
+                            }
+                            case "LPOP": {
+                                var key = tokenizer.nextToken();
+                                result = conn.leftPop(key);
+                                break;
+                            }
+                            case "RPUSH": {
+                                var key = tokenizer.nextToken();
+                                var value = tokenizer.nextToken();
+                                result = conn.rightPush(key, value);
+                                break;
+                            }
+                            case "RPOP": {
+                                var key = tokenizer.nextToken();
+                                result = conn.rightPop(key);
                                 break;
                             }
                             case "QUIT":

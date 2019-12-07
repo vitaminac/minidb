@@ -2,7 +2,7 @@ import java.io.Serializable;
 
 public class Command implements Serializable {
     public enum CommandType implements Serializable {
-        GET, SET, DEL, EXISTS, PING, QUIT
+        GET, SET, DEL, EXISTS, PING, QUIT, LEFT_PUSH, LEFT_POP, RIGHT_PUSH, RIGHT_POP, LENGTH, FIRST, LAST
     }
 
     private final CommandType type;
@@ -39,6 +39,26 @@ public class Command implements Serializable {
 
     public static Command createExistsCommand(Object key) {
         return new Command(CommandType.EXISTS, key);
+    }
+
+    public static Command createLengthCommand(Object key) {
+        return new Command(CommandType.LENGTH, key);
+    }
+
+    public static Command createLeftPushCommand(Object key, Object value) {
+        return new Command(CommandType.LEFT_PUSH, new DictEntry(key, value));
+    }
+
+    public static Command createLeftPopCommand(Object key) {
+        return new Command(CommandType.LEFT_POP, key);
+    }
+
+    public static Command createRightPushCommand(Object key, Object value) {
+        return new Command(CommandType.RIGHT_PUSH, new DictEntry(key, value));
+    }
+
+    public static Command createRightPopCommand(Object key) {
+        return new Command(CommandType.RIGHT_POP, key);
     }
 
     public static Command createQuitCommand() {

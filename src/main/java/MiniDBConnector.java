@@ -46,6 +46,26 @@ public class MiniDBConnector implements AutoCloseable {
         return this.send(Command.createExistsCommand(key));
     }
 
+    public Result length(Object key) {
+        return this.send(Command.createLengthCommand(key));
+    }
+
+    public Result leftPush(Object key, Object value) {
+        return this.send(Command.createLeftPushCommand(key, value));
+    }
+
+    public Result leftPop(Object key) {
+        return this.send(Command.createLeftPopCommand(key));
+    }
+
+    public Result rightPush(Object key, Object value) {
+        return this.send(Command.createRightPushCommand(key, value));
+    }
+
+    public Result rightPop(Object key) {
+        return this.send(Command.createRightPopCommand(key));
+    }
+
     public Result quit() {
         return this.send(Command.createQuitCommand());
     }
