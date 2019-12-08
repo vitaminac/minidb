@@ -36,3 +36,4 @@
 * [MongoDB](https://github.com/mongodb/mongo)
 * [TiDB](https://github.com/pingcap/tidb)
 * [BoltDB](https://github.com/boltdb/bolt)
+* [tinydb](https://github.com/msiemens/tinydb)
