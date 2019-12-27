@@ -1,16 +1,53 @@
 # MiniDB
 
-## Tutorial
+这个项目的主要意图是实现一个Java版的Redis从而深入认识Redis底层是怎么实现的, 
+因为很多数据结构和接口Java都有自己的实现所以我们也就不重复造轮子了 
+主要的目的还是为了了解Redis的应用需求和基本架构
+
+在redis早期只有很少的几个文件 我们可以从一般来先了解下几个最重要的文件
+
+实现列表类型, 底层数据结构是双向列表 对应Java里面的LinkedList, 具体的实现我们暂时可以不关心, 直接使用java的ConcurrentLinkedDeque就好
+
+* adlist.c
+* adlist.h
+
+列表在Redis除了用于提供储存结构还被许多内部模块使用:
+
+* 事务模块使用双端链表依序保存输入的命令
+* 服务器模块使用双端链表来保存多个客户端
+* 订阅/发送模块使用双端链表来保存订阅模式的多个客户端
+* 事件模块使用双端链表来保存时间事件
+
+字典的实现是使用哈希表跟Python的字典和Java的HashMap实现机制一样
+Redis使用了两个哈希表, 
+我估计平时只使用一个
+另一个是为了rehash的时候逐渐将一个表里的数据迁移到另一个表里
+所以在rehash的时候 两个表的数据加起来才是全部数据
+正在rehash的时候取值会从两个表取, 加新的key-value会加到新表的
+rehash结束的时候再把两张表对换一下
+
+* dict.h
+* dict.c
+
+启动逻辑
+载入配置文件
+初始化服务器全局状态例如对应的列表类型
+...
+启动事件循环
+
+## Reference
 
 - [ ] [Redis源码分析](https://www.kancloud.cn/digest/redis-code/199030)
 - [ ] [Redis-Code](https://github.com/linyiqun/Redis-Code)
 - [ ] [Redis 源码解析](https://redissrc.readthedocs.io/en/latest/)
-- [ ] [Architecture of a Database System](http://db.cs.berkeley.edu/papers/fntdb07-architecture.pdf)
-- [ ] Inside SQLite
+- [ ] [菜鸟从Redis源码学习C语言](http://www.shixinke.com/c/study-c-from-redis-source-code)
+- [ ] [Redis 设计与实现](http://redisbook.com/)
 
 ## Book
 
 - [ ] Database System Concepts
+- [ ] Inside SQLite
+- [ ] [Architecture of a Database System](http://db.cs.berkeley.edu/papers/fntdb07-architecture.pdf)
 - [ ] Fundamentals of Database Systems
 - [ ] [Database Management Systems](http://pages.cs.wisc.edu/~dbbook/)
 - [ ] [Database Systems: The Complete Book](http://infolab.stanford.edu/~ullman/dscb.html)
