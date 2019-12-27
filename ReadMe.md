@@ -17,12 +17,12 @@
 
 ## Course
 
-- [ ] [CS 186 at UC Berkeley: Introduction to Database Systems](https://cs186berkeley.net/)
-- [ ] [6.830/6.814: Database Systems - MIT](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-830-database-systems-fall-2010)
-- [ ] [CS 245 at Stanford: Principles of Data-Intensive Systems](http://web.stanford.edu/class/cs245/)
-- [ ] [CS 346 at Stanford: Database System Implementation](https://web.stanford.edu/class/cs346)
-- [ ] [CMU 15-445/645 DATABASE SYSTEMS](https://15445.courses.cs.cmu.edu)
-- [ ] [CS 145 at Stanford: Data Management and Data Systems](https://cs145-fa19.github.io/)
+- [ ] [UC Berkeley CS 186: Introduction to Database Systems](https://cs186berkeley.net/)
+- [ ] [MIT 6.830/6.814: Database Systems](https://ocw.mit.edu/courses/electrical-engineering-and-computer-science/6-830-database-systems-fall-2010)
+- [ ] [Stanford CS 145: Data Management and Data Systems](https://cs145-fa19.github.io/)
+- [ ] [Stanford CS 245: Principles of Data-Intensive Systems](http://web.stanford.edu/class/cs245/)
+- [ ] [Stanford CS 346: Database System Implementation](https://web.stanford.edu/class/cs346)
+- [ ] [CMU 15-445/645: DATABASE SYSTEMS](https://15445.courses.cs.cmu.edu)
 - [ ] [Coursera: Database Management Essentials](https://www.coursera.org/learn/database-management)
 - [ ] [Coursera: Database Systems Specialization](https://www.coursera.org/specializations/database-systems)
 - [ ] [Coursera: Parallel, Concurrent, and Distributed Programming in Java Specialization](https://www.coursera.org/specializations/pcdp)
@@ -31,6 +31,8 @@
 
 * [Redis](https://github.com/antirez/redis)
 * [KeyDB](https://github.com/JohnSully/KeyDB)
+* [RocketMQ](https://github.com/apache/rocketmq)
+* [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
 * [SQLite](https://sqlite.org/src/)
 * [Postgres](https://github.com/postgres/postgres)
 * [MySQL](https://github.com/mysql/mysql-server)
