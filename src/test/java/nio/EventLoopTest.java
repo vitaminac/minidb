@@ -144,7 +144,7 @@ public class EventLoopTest {
                             results.add(this.sb.toString());
                             try {
                                 this.socket.write(ByteBuffer.wrap("RECEIVED ACK FROM SERVER".getBytes()));
-                                this.socket.getSocket().shutdownInput();
+                                this.socket.shutdownInput();
                             } catch (IOException e) {
                                 results.add(e.getMessage());
                             }
@@ -154,7 +154,7 @@ public class EventLoopTest {
                         public void onDrain() {
                             try {
                                 results.add("SENT ACK FROM SERVER");
-                                this.socket.getSocket().shutdownOutput();
+                                this.socket.shutdownOutput();
                             } catch (IOException e) {
                                 results.add(e.getMessage());
                             }
@@ -202,8 +202,8 @@ public class EventLoopTest {
             public void onEnd() {
                 results.add(this.sb.toString());
                 try {
-                    socket.getSocket().shutdownInput();
-                    EVENT_LOOP.defer(() -> socket.getSocket().close(), 1000);
+                    socket.shutdownInput();
+                    EVENT_LOOP.arrange(() -> socket.close());
                 } catch (IOException e) {
                     results.add(e);
                     e.printStackTrace();
@@ -214,7 +214,7 @@ public class EventLoopTest {
             public void onDrain() {
                 results.add("SENT SYN FROM CLIENT");
                 try {
-                    socket.getSocket().shutdownOutput();
+                    socket.shutdownOutput();
                 } catch (IOException e) {
                     results.add(e.getMessage());
                 }
@@ -231,7 +231,7 @@ public class EventLoopTest {
                 e.printStackTrace();
             }
         }), 1000);
-        EVENT_LOOP.defer(EVENT_LOOP::stop, 10000);
+        EVENT_LOOP.defer(EVENT_LOOP::stop, 5000);
         EVENT_LOOP.run();
         results.add("CLOSED SERVER SOCKET");
         assertEquals(

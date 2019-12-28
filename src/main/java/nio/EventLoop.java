@@ -9,6 +9,7 @@ import util.Logger;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
@@ -16,7 +17,7 @@ import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.*;
 
-import static java.nio.channels.SelectionKey.OP_CONNECT;
+import static java.nio.channels.SelectionKey.*;
 
 public class EventLoop {
     private static long askUpTime() {
@@ -69,12 +70,78 @@ public class EventLoop {
         this.events.remove(key);
     }
 
+    private synchronized void accept(final SocketChannel sc, final SelectionKey key, final NIOSocketHandler handler) {
+        final Queue<ByteBuffer> data = new LinkedList<>();
+        this.events.put(key, new SelectHandler() {
+            @Override
+            public void select() throws IOException {
+                if (key.isReadable()) {
+                    // TODO: magic const
+                    ByteBuffer buffer = ByteBuffer.allocate(1024);
+                    int n;
+                    while ((n = sc.read(buffer)) > 0) {
+                        buffer.flip();
+                        handler.onData(buffer.asReadOnlyBuffer());
+                    }
+                    // if the channel has reached end-of-stream
+                    if (n < 0) {
+                        key.interestOpsAnd(~OP_READ);
+                        handler.onEnd();
+                    }
+                }
+                if (key.isWritable()) {
+                    while (key.isWritable() && !data.isEmpty()) {
+                        if (data.peek().hasRemaining()) {
+                            sc.write(data.peek());
+                        } else {
+                            data.remove();
+                        }
+                    }
+                    if (data.isEmpty()) {
+                        key.interestOpsAnd(~OP_WRITE);
+                        handler.onDrain();
+                    }
+                }
+            }
+
+            @Override
+            public void close() throws IOException {
+                sc.close();
+                handler.onClose();
+            }
+        });
+        handler.onConnected(new NIOSocket() {
+            @Override
+            public synchronized void write(ByteBuffer buffer) {
+                key.interestOps(key.interestOps() | OP_WRITE);
+                data.add(buffer);
+            }
+
+            @Override
+            public synchronized void close() throws IOException {
+                sc.close();
+                EventLoop.this.unregister(key);
+                handler.onClose();
+            }
+
+            @Override
+            public synchronized void shutdownInput() throws IOException {
+                sc.socket().shutdownInput();
+                key.interestOpsAnd(~OP_READ);
+            }
+
+            @Override
+            public synchronized void shutdownOutput() throws IOException {
+                sc.socket().shutdownOutput();
+                key.interestOpsAnd(~OP_WRITE);
+            }
+        });
+    }
+
     public synchronized void accept(final SocketChannel sc, final NIOSocketHandler handler) throws IOException {
         sc.configureBlocking(false);
         final var key = sc.register(this.selector, SelectionKey.OP_READ);
-        var socket = new NIOSocketWrapper(sc, key, handler);
-        this.events.put(key, socket);
-        handler.onConnected(socket);
+        this.accept(sc, key, handler);
     }
 
     public synchronized void connect(final InetSocketAddress address, final NIOSocketHandler handler) throws IOException {
@@ -102,11 +169,7 @@ public class EventLoop {
                     // Non-blocking mode is most useful in conjunction with selector-based multiplexing.
                     // A channel must be placed into non-blocking mode before being registered with a selector,
                     // and may not be returned to blocking mode until it has been deregistered.
-                    var socket = new NIOSocketWrapper(sc, key, handler);
-                    synchronized (EventLoop.this.events) {
-                        EventLoop.this.events.put(key, socket);
-                    }
-                    handler.onConnected(socket);
+                    EventLoop.this.accept(sc, key, handler);
                 }
             }
 
