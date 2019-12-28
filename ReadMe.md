@@ -30,18 +30,27 @@ rehash结束的时候再把两张表对换一下
 * dict.c
 
 启动逻辑
-载入配置文件
-初始化服务器全局状态例如对应的列表类型
-...
-启动事件循环
+
+1. 载入配置文件 - initServerConfig()
+2. 初始化服务器全局状态例如对应的列表类型 - initServer()
+3. 创建daemon进程 if (server.daemonize) daemonize() 后台运行调用setsid 脱离用户session
+3. ...
+4. 载入数据
+5. 启动事件循环 - aeMain(server.el)
+
+命令执行
+
+readQueryFromClient -> processCommand -> lookupCommand -> cmdTable -> reply-handler
 
 ## Reference
 
+- [ ] [Redis first commit](https://github.com/antirez/redis/tree/ed9b544e10b84cd43348ddfab7068b610a5df1f7)
 - [ ] [Redis源码分析](https://www.kancloud.cn/digest/redis-code/199030)
 - [ ] [Redis-Code](https://github.com/linyiqun/Redis-Code)
 - [ ] [Redis 源码解析](https://redissrc.readthedocs.io/en/latest/)
 - [ ] [菜鸟从Redis源码学习C语言](http://www.shixinke.com/c/study-c-from-redis-source-code)
 - [ ] [Redis 设计与实现](http://redisbook.com/)
+- [x] [The Node.js Event Loop, Timers, and process.nextTick()](https://nodejs.org/en/docs/guides/event-loop-timers-and-nexttick/)
 
 ## Book
 

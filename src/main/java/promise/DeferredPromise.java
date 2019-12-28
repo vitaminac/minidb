@@ -72,6 +72,7 @@ public class DeferredPromise<D> implements Promise<D> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public Optional<D> getResult() throws Exception {
         if (this.result == null) {
             return Optional.empty();
@@ -96,6 +97,7 @@ public class DeferredPromise<D> implements Promise<D> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <R> Promise<R> then(FulfilledHandler<? super D, R> fulfilledHandler, FailureHandler<R> failureHandler) {
         final DeferredPromise<R> ret = new DeferredPromise<>();
         switch (this.state) {
@@ -129,6 +131,7 @@ public class DeferredPromise<D> implements Promise<D> {
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <R> Promise<R> then(Delegate<D, Promise<R>, Exception> delegate) {
         switch (this.state) {
             case Fulfilled:

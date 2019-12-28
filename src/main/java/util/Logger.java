@@ -7,6 +7,10 @@ public class Logger {
         this.clazz = clazz;
     }
 
+    public void info(String msg) {
+        System.out.println(msg);
+    }
+
     public void error(Throwable e) {
         e.printStackTrace();
     }

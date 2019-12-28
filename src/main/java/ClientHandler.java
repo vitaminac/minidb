@@ -1,14 +1,19 @@
+import util.Logger;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Deque;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
 
 public class ClientHandler implements Runnable {
+    private static final Logger logger = new Logger(ClientHandler.class);
+
     private static final ConcurrentMap<Object, Object> MINIDB = new ConcurrentHashMap<>();
     private static final Deque<Object> EMPTY = new LinkedList<>();
 
@@ -20,7 +25,6 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
-        // TODO: NON-BLOCKING
         try (
                 // TODO: Buffer output
                 var oos = new ObjectOutputStream(this.socket.getOutputStream());
@@ -38,7 +42,7 @@ public class ClientHandler implements Runnable {
                         break;
                     }
                     case SET: {
-                        var entry = (DictEntry) command.getExtras();
+                        var entry = (Map.Entry) command.getExtras();
                         MINIDB.put(entry.getKey(), entry.getValue());
                         oos.writeObject(Result.ok(entry));
                         break;
@@ -68,7 +72,7 @@ public class ClientHandler implements Runnable {
                     }
                     case LEFT_PUSH: {
                         // TODO: PUSH A LIST OF ELEMENTS
-                        var entry = (DictEntry) command.getExtras();
+                        var entry = (Map.Entry) command.getExtras();
                         MINIDB.putIfAbsent(entry.getKey(), new ConcurrentLinkedDeque<>());
                         oos.writeObject(Result.ok(((Deque) MINIDB.compute(entry.getKey(), (key, val) -> {
                             ((Deque) val).addFirst(entry.getValue());
@@ -81,7 +85,7 @@ public class ClientHandler implements Runnable {
                         break;
                     }
                     case RIGHT_PUSH: {
-                        var entry = (DictEntry) command.getExtras();
+                        var entry = (Map.Entry) command.getExtras();
                         MINIDB.putIfAbsent(entry.getKey(), new ConcurrentLinkedDeque<>());
                         oos.writeObject(Result.ok(((Deque) MINIDB.compute(entry.getKey(), (key, val) -> {
                             ((Deque) val).addLast(entry.getValue());
@@ -106,13 +110,12 @@ public class ClientHandler implements Runnable {
                 oos.flush();
             }
         } catch (Exception e) {
-            // TODO: logging
-            e.printStackTrace();
+            logger.error(e);
         } finally {
             try {
                 this.socket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error(e);
             }
         }
     }

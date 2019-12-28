@@ -1,4 +1,5 @@
 import java.io.Serializable;
+import java.util.AbstractMap;
 
 public class Command implements Serializable {
     public enum CommandType implements Serializable {
@@ -30,7 +31,7 @@ public class Command implements Serializable {
     }
 
     public static Command createSetCommand(Object key, Object value) {
-        return new Command(CommandType.SET, new DictEntry(key, value));
+        return new Command(CommandType.SET, new AbstractMap.SimpleEntry<>(key, value));
     }
 
     public static Command createDelCommand(Object key) {
@@ -46,7 +47,7 @@ public class Command implements Serializable {
     }
 
     public static Command createLeftPushCommand(Object key, Object value) {
-        return new Command(CommandType.LEFT_PUSH, new DictEntry(key, value));
+        return new Command(CommandType.LEFT_PUSH, new AbstractMap.SimpleEntry<>(key, value));
     }
 
     public static Command createLeftPopCommand(Object key) {
@@ -54,7 +55,7 @@ public class Command implements Serializable {
     }
 
     public static Command createRightPushCommand(Object key, Object value) {
-        return new Command(CommandType.RIGHT_PUSH, new DictEntry(key, value));
+        return new Command(CommandType.RIGHT_PUSH, new AbstractMap.SimpleEntry<>(key, value));
     }
 
     public static Command createRightPopCommand(Object key) {
