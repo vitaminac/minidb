@@ -180,7 +180,7 @@ public class EventLoopTest {
                 results.add("CLOSING SERVER SOCKET");
             }
         });
-        EVENT_LOOP.defer(() -> EVENT_LOOP.connect(new InetSocketAddress(PORT), new NIOSocketHandler() {
+        EVENT_LOOP.arrange(() -> EVENT_LOOP.connect(new InetSocketAddress(PORT), new NIOSocketHandler() {
             private StringBuilder sb = new StringBuilder();
             private NIOSocket socket;
 
@@ -230,7 +230,7 @@ public class EventLoopTest {
                 results.add(e);
                 e.printStackTrace();
             }
-        }), 1000);
+        }));
         EVENT_LOOP.defer(EVENT_LOOP::stop, 5000);
         EVENT_LOOP.run();
         results.add("CLOSED SERVER SOCKET");

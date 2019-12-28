@@ -70,7 +70,7 @@ public class EventLoop {
     }
 
     private synchronized void accept(final SocketChannel sc, final SelectionKey key, final NIOSocketHandler handler) {
-        final Queue<ByteBuffer> data = new LinkedList<>();
+        final Queue<ByteBuffer> data = new ConcurrentLinkedQueue<>();
         this.events.put(key, new SelectHandler() {
             @Override
             public void select() throws IOException {
@@ -111,26 +111,26 @@ public class EventLoop {
         });
         handler.onConnected(new NIOSocket() {
             @Override
-            public synchronized void write(ByteBuffer buffer) {
-                key.interestOps(key.interestOps() | OP_WRITE);
+            public void write(ByteBuffer buffer) {
                 data.add(buffer);
+                key.interestOpsOr(OP_WRITE);
             }
 
             @Override
-            public synchronized void close() throws IOException {
+            public void close() throws IOException {
                 sc.close();
                 EventLoop.this.unregister(key);
                 handler.onClose();
             }
 
             @Override
-            public synchronized void shutdownInput() throws IOException {
+            public void shutdownInput() throws IOException {
                 sc.socket().shutdownInput();
                 key.interestOpsAnd(~OP_READ);
             }
 
             @Override
-            public synchronized void shutdownOutput() throws IOException {
+            public void shutdownOutput() throws IOException {
                 sc.socket().shutdownOutput();
                 key.interestOpsAnd(~OP_WRITE);
             }
@@ -309,7 +309,7 @@ public class EventLoop {
             // All active timers scheduled for a time
             // before the loop’s concept of now queue into pending list
             long timeout = 0; // zero mean wait for infinity if there no more timers
-            final var it = timers.iterator();
+            final var it = this.timers.iterator();
             while (it.hasNext()) {
                 final var scheduledTask = it.next();
                 final var earliestStartTime = scheduledTask.getStartDate();
@@ -318,6 +318,7 @@ public class EventLoop {
                     it.remove();
                 } else {
                     timeout = earliestStartTime - now;
+                    break;
                 }
             }
 
