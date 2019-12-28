@@ -241,14 +241,14 @@ public class EventLoop {
         while (it.hasNext()) {
             final ScheduledTask scheduledTask = it.next();
             final long earliestStartTime = scheduledTask.getStartDate();
-            if (earliestStartTime < this.now) {
+            if (earliestStartTime <= this.now) {
                 this.pending.add(scheduledTask);
                 it.remove();
             } else {
                 return earliestStartTime - this.now;
             }
         }
-        // zero mean wait for infinity
+        // zero mean wait for infinity if there no more timers
         return 0;
     }
 
