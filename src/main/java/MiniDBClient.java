@@ -18,64 +18,42 @@ public class MiniDBClient {
                     if (tokenizer.countTokens() > 0) {
                         Result result;
                         var command = tokenizer.nextToken();
-                        switch (command) {
-                            case "PING": {
-                                result = conn.ping();
-                                break;
-                            }
-                            case "SET": {
-                                var key = tokenizer.nextToken();
-                                var value = tokenizer.nextToken();
-                                result = conn.set(key, value);
-                                break;
-                            }
-                            case "DEL": {
-                                var key = tokenizer.nextToken();
-                                result = conn.delete(key);
-                                break;
-                            }
-                            case "GET": {
-                                var key = tokenizer.nextToken();
-                                result = conn.get(key);
-                                break;
-                            }
-                            case "EXISTS": {
-                                var key = tokenizer.nextToken();
-                                result = conn.exists(key);
-                                break;
-                            }
-                            case "LEN": {
-                                var key = tokenizer.nextToken();
-                                result = conn.length(key);
-                                break;
-                            }
-                            case "LPUSH": {
-                                var key = tokenizer.nextToken();
-                                var value = tokenizer.nextToken();
-                                result = conn.leftPush(key, value);
-                                break;
-                            }
-                            case "LPOP": {
-                                var key = tokenizer.nextToken();
-                                result = conn.leftPop(key);
-                                break;
-                            }
-                            case "RPUSH": {
-                                var key = tokenizer.nextToken();
-                                var value = tokenizer.nextToken();
-                                result = conn.rightPush(key, value);
-                                break;
-                            }
-                            case "RPOP": {
-                                var key = tokenizer.nextToken();
-                                result = conn.rightPop(key);
-                                break;
-                            }
-                            case "QUIT":
-                                result = conn.quit();
-                                break;
-                            default:
-                                result = Result.fail("ERR: unknown command " + command);
+                        if (command.equals(Command.CommandType.PING.name())) {
+                            result = conn.ping();
+                        } else if (command.equals(Command.CommandType.GET.name())) {
+                            var key = tokenizer.nextToken();
+                            result = conn.get(key);
+                        } else if (command.equals(Command.CommandType.SET.name())) {
+                            var key = tokenizer.nextToken();
+                            var value = tokenizer.nextToken();
+                            result = conn.set(key, value);
+                        } else if (command.equals(Command.CommandType.EXISTS.name())) {
+                            var key = tokenizer.nextToken();
+                            result = conn.exists(key);
+                        } else if (command.equals(Command.CommandType.DEL.name())) {
+                            var key = tokenizer.nextToken();
+                            result = conn.delete(key);
+                        } else if (command.equals(Command.CommandType.LEN.name())) {
+                            var key = tokenizer.nextToken();
+                            result = conn.length(key);
+                        } else if (command.equals(Command.CommandType.LPUSH.name())) {
+                            var key = tokenizer.nextToken();
+                            var value = tokenizer.nextToken();
+                            result = conn.leftPush(key, value);
+                        } else if (command.equals(Command.CommandType.LPOP.name())) {
+                            var key = tokenizer.nextToken();
+                            result = conn.leftPop(key);
+                        } else if (command.equals(Command.CommandType.RPUSH.name())) {
+                            var key = tokenizer.nextToken();
+                            var value = tokenizer.nextToken();
+                            result = conn.rightPush(key, value);
+                        } else if (command.equals(Command.CommandType.RPOP.name())) {
+                            var key = tokenizer.nextToken();
+                            result = conn.rightPop(key);
+                        } else if (command.equals(Command.CommandType.QUIT.name())) {
+                            result = conn.quit();
+                        } else {
+                            result = Result.fail("ERR: unknown command " + command);
                         }
                         System.out.println(result.getExtras());
                     }

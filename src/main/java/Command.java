@@ -3,7 +3,7 @@ import java.util.AbstractMap;
 
 public class Command implements Serializable {
     public enum CommandType implements Serializable {
-        GET, SET, DEL, EXISTS, PING, QUIT, LEFT_PUSH, LEFT_POP, RIGHT_PUSH, RIGHT_POP, LENGTH, FIRST, LAST
+        GET, SET, DEL, EXISTS, PING, QUIT, LPUSH, LPOP, RPUSH, RPOP, LEN, FIRST, LAST
     }
 
     private final CommandType type;
@@ -43,23 +43,23 @@ public class Command implements Serializable {
     }
 
     public static Command createLengthCommand(Object key) {
-        return new Command(CommandType.LENGTH, key);
+        return new Command(CommandType.LEN, key);
     }
 
     public static Command createLeftPushCommand(Object key, Object value) {
-        return new Command(CommandType.LEFT_PUSH, new AbstractMap.SimpleEntry<>(key, value));
+        return new Command(CommandType.LPUSH, new AbstractMap.SimpleEntry<>(key, value));
     }
 
     public static Command createLeftPopCommand(Object key) {
-        return new Command(CommandType.LEFT_POP, key);
+        return new Command(CommandType.LPOP, key);
     }
 
     public static Command createRightPushCommand(Object key, Object value) {
-        return new Command(CommandType.RIGHT_PUSH, new AbstractMap.SimpleEntry<>(key, value));
+        return new Command(CommandType.RPUSH, new AbstractMap.SimpleEntry<>(key, value));
     }
 
     public static Command createRightPopCommand(Object key) {
-        return new Command(CommandType.RIGHT_POP, key);
+        return new Command(CommandType.RPOP, key);
     }
 
     public static Command createQuitCommand() {

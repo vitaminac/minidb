@@ -42,6 +42,24 @@ rehash结束的时候再把两张表对换一下
 
 readQueryFromClient -> processCommand -> lookupCommand -> cmdTable -> reply-handler
 
+lookupCommand -> 根据字符来查找相应命令的实现函数
+
+目前支持的命令有
+
+* PING
+* GET
+* SET
+* EXISTS
+* DEL
+* LEN
+* FIRST
+* LAST
+* LPUSH
+* LPOP
+* RPUSH
+* RPOP
+* QUIT
+
 ## Reference
 
 - [ ] [Redis first commit](https://github.com/antirez/redis/tree/ed9b544e10b84cd43348ddfab7068b610a5df1f7)

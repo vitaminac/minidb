@@ -55,7 +55,7 @@ public class ClientHandler implements Runnable {
                         oos.writeObject(Result.ok(MINIDB.remove(command.getExtras())));
                         break;
                     }
-                    case LENGTH: {
+                    case LEN: {
                         var result = (Deque) MINIDB.getOrDefault(command.getExtras(), EMPTY);
                         oos.writeObject(Result.ok(result.size()));
                         break;
@@ -70,7 +70,7 @@ public class ClientHandler implements Runnable {
                         oos.writeObject(Result.ok(result.peekLast()));
                         break;
                     }
-                    case LEFT_PUSH: {
+                    case LPUSH: {
                         // TODO: PUSH A LIST OF ELEMENTS
                         var entry = (Map.Entry) command.getExtras();
                         MINIDB.putIfAbsent(entry.getKey(), new ConcurrentLinkedDeque<>());
@@ -80,11 +80,11 @@ public class ClientHandler implements Runnable {
                         })).size()));
                         break;
                     }
-                    case LEFT_POP: {
+                    case LPOP: {
                         oos.writeObject(Result.ok(((Deque) MINIDB.getOrDefault(command.getExtras(), EMPTY)).pollFirst()));
                         break;
                     }
-                    case RIGHT_PUSH: {
+                    case RPUSH: {
                         var entry = (Map.Entry) command.getExtras();
                         MINIDB.putIfAbsent(entry.getKey(), new ConcurrentLinkedDeque<>());
                         oos.writeObject(Result.ok(((Deque) MINIDB.compute(entry.getKey(), (key, val) -> {
@@ -93,7 +93,7 @@ public class ClientHandler implements Runnable {
                         })).size()));
                         break;
                     }
-                    case RIGHT_POP: {
+                    case RPOP: {
                         oos.writeObject(Result.ok(((Deque) MINIDB.getOrDefault(command.getExtras(), EMPTY)).pollLast()));
                         break;
                     }
