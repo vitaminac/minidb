@@ -21,7 +21,7 @@ public class MiniDBServer {
             @Override
             public void onAccept(SocketChannel sc) {
                 logger.info("Received new connection from " + sc.socket().getRemoteSocketAddress().toString());
-                loop.start(new ClientHandler(sc.socket()));
+                loop.start(new ClientHandler(loop, sc.socket()));
             }
 
             @Override

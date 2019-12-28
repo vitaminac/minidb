@@ -33,6 +33,14 @@ public class MiniDBClient {
                         } else if (command.equals(Command.CommandType.DEL.name())) {
                             var key = tokenizer.nextToken();
                             result = conn.delete(key);
+                        } else if (command.equals(Command.CommandType.EXPIRE.name())) {
+                            var key = tokenizer.nextToken();
+                            if (tokenizer.hasMoreTokens()) {
+                                var milliseconds = Long.parseLong(tokenizer.nextToken());
+                                result = conn.expire(key, milliseconds);
+                            } else {
+                                result = Result.fail("Syntax error: EXPIRE key milliseconds");
+                            }
                         } else if (command.equals(Command.CommandType.LEN.name())) {
                             var key = tokenizer.nextToken();
                             result = conn.length(key);

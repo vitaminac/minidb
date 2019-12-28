@@ -252,10 +252,14 @@ public class EventLoop {
 
     public synchronized void arrange(Job job) {
         this.pending.add(job);
+        // if another thread add a new task, then wakeup the main thread from the select operation if it is blocking
+        this.selector.wakeup();
     }
 
     public synchronized void schedule(ScheduledTask task) {
         this.timers.add(task);
+        // if another thread add a new task, then wakeup the main thread from the select operation if it is blocking
+        this.selector.wakeup();
     }
 
     public synchronized void defer(Job job, long millisecond) {

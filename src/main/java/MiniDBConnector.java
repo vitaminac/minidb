@@ -46,6 +46,10 @@ public class MiniDBConnector implements AutoCloseable {
         return this.send(Command.createExistsCommand(key));
     }
 
+    public Result expire(Object key, long milliseconds) {
+        return this.send(Command.createExpireCommand(key, milliseconds));
+    }
+
     public Result length(Object key) {
         return this.send(Command.createLengthCommand(key));
     }

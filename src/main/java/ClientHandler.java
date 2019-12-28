@@ -1,3 +1,4 @@
+import nio.EventLoop;
 import util.Logger;
 
 import java.io.IOException;
@@ -18,12 +19,15 @@ public class ClientHandler implements Runnable {
     private static final Deque<Object> EMPTY = new LinkedList<>();
 
     private final Socket socket;
+    private final EventLoop loop;
 
-    public ClientHandler(Socket socket) {
+    public ClientHandler(final EventLoop loop, final Socket socket) {
+        this.loop = loop;
         this.socket = socket;
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void run() {
         try (
                 // TODO: Buffer output
@@ -58,6 +62,12 @@ public class ClientHandler implements Runnable {
                     case LEN: {
                         var result = (Deque) MINIDB.getOrDefault(command.getExtras(), EMPTY);
                         oos.writeObject(Result.ok(result.size()));
+                        break;
+                    }
+                    case EXPIRE: {
+                        var entry = (Map.Entry<Object, Long>) command.getExtras();
+                        this.loop.defer(() -> MINIDB.remove(entry.getKey()), entry.getValue());
+                        oos.writeObject(Result.ok("OK"));
                         break;
                     }
                     case FIRST: {

@@ -3,7 +3,20 @@ import java.util.AbstractMap;
 
 public class Command implements Serializable {
     public enum CommandType implements Serializable {
-        GET, SET, DEL, EXISTS, PING, QUIT, LPUSH, LPOP, RPUSH, RPOP, LEN, FIRST, LAST
+        PING,
+        GET,
+        SET,
+        EXISTS,
+        DEL,
+        EXPIRE,
+        LEN,
+        FIRST,
+        LAST,
+        LPUSH,
+        LPOP,
+        RPUSH,
+        RPOP,
+        QUIT
     }
 
     private final CommandType type;
@@ -44,6 +57,10 @@ public class Command implements Serializable {
 
     public static Command createLengthCommand(Object key) {
         return new Command(CommandType.LEN, key);
+    }
+
+    public static Command createExpireCommand(Object key, long milliseconds) {
+        return new Command(CommandType.EXPIRE, new AbstractMap.SimpleEntry<>(key, milliseconds));
     }
 
     public static Command createLeftPushCommand(Object key, Object value) {
