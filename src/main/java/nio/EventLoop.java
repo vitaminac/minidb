@@ -29,7 +29,6 @@ public class EventLoop {
     // you might run into an infinite loop if you omit volatile, since the first thread might cache the value of stop.
     // Here, the volatile serves as a hint to the compiler to be a bit more careful with optimizations.
     private volatile boolean stopped = false;
-    private long now;
 
     // The Java NIO Selector is a component which can examine one or more Java NIO Channel instances,
     // and determine which channels are ready for e.g. reading or writing
@@ -299,33 +298,28 @@ public class EventLoop {
         }));
     }
 
-    private synchronized long processTimersAndCalculateTimeout() {
-        final Iterator<ScheduledTask> it = timers.iterator();
-        while (it.hasNext()) {
-            final ScheduledTask scheduledTask = it.next();
-            final long earliestStartTime = scheduledTask.getStartDate();
-            if (earliestStartTime <= this.now) {
-                this.pending.add(scheduledTask);
-                it.remove();
-            } else {
-                return earliestStartTime - this.now;
-            }
-        }
-        // zero mean wait for infinity if there no more timers
-        return 0;
-    }
-
     public void run() {
         // check if the loop is considered to be alive
         while (!this.stopped && (!this.pending.isEmpty() || !this.timers.isEmpty() || !this.isIdle())) {
             // caches the current time at the execute of the event loop tick
             // in order to reduce the number of time-related system calls
-            this.now = askUpTime();
+            long now = askUpTime();
 
             // first phase
             // All active timers scheduled for a time
             // before the loop’s concept of now queue into pending list
-            final long timeout = this.processTimersAndCalculateTimeout();
+            long timeout = 0; // zero mean wait for infinity if there no more timers
+            final var it = timers.iterator();
+            while (it.hasNext()) {
+                final var scheduledTask = it.next();
+                final var earliestStartTime = scheduledTask.getStartDate();
+                if (earliestStartTime <= now) {
+                    this.pending.add(scheduledTask);
+                    it.remove();
+                } else {
+                    timeout = earliestStartTime - now;
+                }
+            }
 
             // second phase
             // I/O polling
@@ -335,20 +329,20 @@ public class EventLoop {
 
             // third phase
             // check future
-            final Iterator<Map.Entry<Future<?>, Job>> it = this.futures.entrySet().iterator();
-            while (it.hasNext()) {
-                final Map.Entry<Future<?>, Job> entry = it.next();
-                final Future<?> future = entry.getKey();
+            final var itEntry = this.futures.entrySet().iterator();
+            while (itEntry.hasNext()) {
+                final var entry = itEntry.next();
+                final var future = entry.getKey();
                 if (future.isDone() || future.isCancelled()) {
                     this.pending.add(entry.getValue());
-                    it.remove();
+                    itEntry.remove();
                 }
             }
 
             // fourth phase
             // Pending callbacks are called
             while (!this.pending.isEmpty()) {
-                final Job job = this.pending.remove();
+                final var job = this.pending.remove();
                 try {
                     job.doJob();
                 } catch (Exception e) {
