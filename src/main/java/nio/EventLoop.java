@@ -70,6 +70,7 @@ public class EventLoop {
     }
 
     private synchronized void accept(final SocketChannel sc, final SelectionKey key, final NIOSocketHandler handler) {
+        // TODO: review race condition
         final Queue<ByteBuffer> data = new ConcurrentLinkedQueue<>();
         this.events.put(key, new SelectHandler() {
             @Override
