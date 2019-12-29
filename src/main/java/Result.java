@@ -30,4 +30,6 @@ public class Result implements Serializable {
     }
 
     public static final Result EXPIRE_SYNTAX_ERROR = Result.fail("Syntax error: EXPIRE key milliseconds");
+    public static final Result UNKNOWN_COMMAND = Result.fail("ERROR: Unknown Command");
+    public static final Result QUITTING = Result.ok("QUITTING");
 }

@@ -83,13 +83,13 @@ public class MiniDBConnector implements AutoCloseable {
     }
 
     public boolean isAlive() {
-        return this.ping().isOk();
+        return !this.socket.isClosed() && this.ping().isOk();
     }
 
     @Override
     public void close() throws IOException {
-        this.socket.shutdownOutput();
         this.socket.shutdownInput();
+        this.socket.shutdownOutput();
         this.oos.close();
         this.ois.close();
         this.socket.close();

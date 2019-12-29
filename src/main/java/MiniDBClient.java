@@ -73,9 +73,10 @@ public class MiniDBClient {
                             var key = tokenizer.nextToken();
                             result = conn.type(key);
                         } else if (command.equals(Command.CommandType.QUIT.name())) {
-                            result = conn.quit();
+                            conn.quit();
+                            return;
                         } else {
-                            result = Result.fail("ERR: unknown command " + command);
+                            result = Result.fail("ERR: Unknown Command " + command);
                         }
                         System.out.println(result.getExtras());
                     }
