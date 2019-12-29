@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class ClientHandler implements Runnable {
     private static final Logger logger = new Logger(ClientHandler.class);
@@ -39,6 +42,15 @@ public class ClientHandler implements Runnable {
                 switch (command.getType()) {
                     case PING: {
                         oos.writeObject(Result.ok("PONG"));
+                        break;
+                    }
+                    case KEYS: {
+                        var pattern = (String) command.getExtras();
+                        Pattern p = Pattern.compile(pattern);
+                        oos.writeObject(Result.ok(MINIDB.keySet().stream().filter(key -> {
+                            Matcher matcher = p.matcher(key.toString());
+                            return matcher.matches();
+                        }).collect(Collectors.toList())));
                         break;
                     }
                     case GET: {

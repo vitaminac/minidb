@@ -47,6 +47,7 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 目前支持的命令有
 
 * PING
+* KEYS
 * GET
 * SET
 * EXISTS

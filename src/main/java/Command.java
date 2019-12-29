@@ -4,6 +4,7 @@ import java.util.AbstractMap;
 public class Command implements Serializable {
     public enum CommandType implements Serializable {
         PING,
+        KEYS,
         GET,
         SET,
         EXISTS,
@@ -37,6 +38,10 @@ public class Command implements Serializable {
 
     public static Command createPingCommand() {
         return new Command(CommandType.PING, null);
+    }
+
+    public static Command createKeysCommand(String pattern) {
+        return new Command(CommandType.KEYS, pattern);
     }
 
     public static Command createGetCommand(Object key) {

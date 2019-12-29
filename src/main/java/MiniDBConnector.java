@@ -30,6 +30,10 @@ public class MiniDBConnector implements AutoCloseable {
         return this.send(Command.createPingCommand());
     }
 
+    public Result keys(String pattern) {
+        return this.send(Command.createKeysCommand(pattern));
+    }
+
     public Result get(Object key) {
         return this.send(Command.createGetCommand(key));
     }

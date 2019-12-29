@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 public class MiniDBClient {
@@ -20,6 +21,9 @@ public class MiniDBClient {
                         var command = tokenizer.nextToken();
                         if (command.equals(Command.CommandType.PING.name())) {
                             result = conn.ping();
+                        } else if (command.equals(Command.CommandType.KEYS.name())) {
+                            var pattern = tokenizer.nextToken();
+                            result = conn.keys(pattern);
                         } else if (command.equals(Command.CommandType.GET.name())) {
                             var key = tokenizer.nextToken();
                             result = conn.get(key);
