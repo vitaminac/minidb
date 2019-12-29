@@ -2,14 +2,21 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.StringTokenizer;
 
 public class MiniDBClient {
-    public static void main(String... args) throws IOException {
-        // TODO: get host and port from configuration file
+    public static void main(String[] args) throws IOException {
+        String host = "localhost";
+        int port = 9000;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].equals("-h")) {
+                host = args[i + 1];
+            } else if (args[i].equals("-p")) {
+                port = Integer.parseInt(args[i]);
+            }
+        }
         try (
-                var conn = new MiniDBConnector("localhost", 9000);
+                var conn = new MiniDBConnector(host, port);
                 var scanner = new Scanner(new BufferedReader(new InputStreamReader(System.in)));
         ) {
             while (conn.isAlive()) {
@@ -43,7 +50,7 @@ public class MiniDBClient {
                                 var milliseconds = Long.parseLong(tokenizer.nextToken());
                                 result = conn.expire(key, milliseconds);
                             } else {
-                                result = Result.fail("Syntax error: EXPIRE key milliseconds");
+                                result = Result.EXPIRE_SYNTAX_ERROR;
                             }
                         } else if (command.equals(Command.CommandType.LEN.name())) {
                             var key = tokenizer.nextToken();

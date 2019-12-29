@@ -28,4 +28,6 @@ public class Result implements Serializable {
     public static Result ok(Object extras) {
         return new Result(ResultType.OK, extras);
     }
+
+    public static final Result EXPIRE_SYNTAX_ERROR = Result.fail("Syntax error: EXPIRE key milliseconds");
 }
