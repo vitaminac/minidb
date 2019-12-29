@@ -24,61 +24,63 @@ public class MiniDBClient {
                     var line = scanner.nextLine();
                     var tokenizer = new StringTokenizer(line);
                     if (tokenizer.countTokens() > 0) {
-                        Result result;
+                        Reply reply;
                         var command = tokenizer.nextToken();
                         if (command.equals(Command.CommandType.PING.name())) {
-                            result = conn.ping();
+                            reply = conn.ping();
+                        } else if (command.equals(Command.CommandType.SELECT.name())) {
+                            reply = conn.select(Integer.parseInt(tokenizer.nextToken()));
                         } else if (command.equals(Command.CommandType.KEYS.name())) {
                             var pattern = tokenizer.nextToken();
-                            result = conn.keys(pattern);
+                            reply = conn.keys(pattern);
                         } else if (command.equals(Command.CommandType.GET.name())) {
                             var key = tokenizer.nextToken();
-                            result = conn.get(key);
+                            reply = conn.get(key);
                         } else if (command.equals(Command.CommandType.SET.name())) {
                             var key = tokenizer.nextToken();
                             var value = tokenizer.nextToken();
-                            result = conn.set(key, value);
+                            reply = conn.set(key, value);
                         } else if (command.equals(Command.CommandType.EXISTS.name())) {
                             var key = tokenizer.nextToken();
-                            result = conn.exists(key);
+                            reply = conn.exists(key);
                         } else if (command.equals(Command.CommandType.DEL.name())) {
                             var key = tokenizer.nextToken();
-                            result = conn.delete(key);
+                            reply = conn.delete(key);
                         } else if (command.equals(Command.CommandType.EXPIRE.name())) {
                             var key = tokenizer.nextToken();
                             if (tokenizer.hasMoreTokens()) {
                                 var milliseconds = Long.parseLong(tokenizer.nextToken());
-                                result = conn.expire(key, milliseconds);
+                                reply = conn.expire(key, milliseconds);
                             } else {
-                                result = Result.EXPIRE_SYNTAX_ERROR;
+                                reply = Reply.EXPIRE_SYNTAX_ERROR;
                             }
                         } else if (command.equals(Command.CommandType.LEN.name())) {
                             var key = tokenizer.nextToken();
-                            result = conn.length(key);
+                            reply = conn.length(key);
                         } else if (command.equals(Command.CommandType.LPUSH.name())) {
                             var key = tokenizer.nextToken();
                             var value = tokenizer.nextToken();
-                            result = conn.leftPush(key, value);
+                            reply = conn.leftPush(key, value);
                         } else if (command.equals(Command.CommandType.LPOP.name())) {
                             var key = tokenizer.nextToken();
-                            result = conn.leftPop(key);
+                            reply = conn.leftPop(key);
                         } else if (command.equals(Command.CommandType.RPUSH.name())) {
                             var key = tokenizer.nextToken();
                             var value = tokenizer.nextToken();
-                            result = conn.rightPush(key, value);
+                            reply = conn.rightPush(key, value);
                         } else if (command.equals(Command.CommandType.RPOP.name())) {
                             var key = tokenizer.nextToken();
-                            result = conn.rightPop(key);
+                            reply = conn.rightPop(key);
                         } else if (command.equals(Command.CommandType.TYPE.name())) {
                             var key = tokenizer.nextToken();
-                            result = conn.type(key);
+                            reply = conn.type(key);
                         } else if (command.equals(Command.CommandType.QUIT.name())) {
                             conn.quit();
                             return;
                         } else {
-                            result = Result.fail("ERR: Unknown Command " + command);
+                            reply = Reply.fail("ERR: Unknown Command " + command);
                         }
-                        System.out.println(result.getExtras());
+                        System.out.println(reply.getExtras());
                     }
                 }
             }

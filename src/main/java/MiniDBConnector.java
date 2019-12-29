@@ -13,72 +13,75 @@ public class MiniDBConnector implements AutoCloseable {
         // TODO: Buffer Output Stream
         this.oos = new ObjectOutputStream(this.socket.getOutputStream());
         this.ois = new ObjectInputStream(this.socket.getInputStream());
-
     }
 
-    private Result send(Command command) {
+    private Reply send(Command command) {
         try {
             this.oos.writeObject(command);
             this.oos.flush();
-            return (Result) ois.readObject();
+            return (Reply) ois.readObject();
         } catch (Exception e) {
-            return Result.fail(e.toString());
+            return Reply.fail(e.toString());
         }
     }
 
-    public Result ping() {
+    public Reply ping() {
         return this.send(Command.createPingCommand());
     }
 
-    public Result keys(String pattern) {
+    public Reply select(int index) {
+        return this.send(Command.createSelectCommand(index));
+    }
+
+    public Reply keys(String pattern) {
         return this.send(Command.createKeysCommand(pattern));
     }
 
-    public Result get(Object key) {
+    public Reply get(Object key) {
         return this.send(Command.createGetCommand(key));
     }
 
-    public Result set(Object key, Object value) {
+    public Reply set(Object key, Object value) {
         return this.send(Command.createSetCommand(key, value));
     }
 
-    public Result delete(Object key) {
+    public Reply delete(Object key) {
         return this.send(Command.createDelCommand(key));
     }
 
-    public Result exists(Object key) {
+    public Reply exists(Object key) {
         return this.send(Command.createExistsCommand(key));
     }
 
-    public Result expire(Object key, long milliseconds) {
+    public Reply expire(Object key, long milliseconds) {
         return this.send(Command.createExpireCommand(key, milliseconds));
     }
 
-    public Result length(Object key) {
+    public Reply length(Object key) {
         return this.send(Command.createLengthCommand(key));
     }
 
-    public Result leftPush(Object key, Object value) {
+    public Reply leftPush(Object key, Object value) {
         return this.send(Command.createLeftPushCommand(key, value));
     }
 
-    public Result leftPop(Object key) {
+    public Reply leftPop(Object key) {
         return this.send(Command.createLeftPopCommand(key));
     }
 
-    public Result rightPush(Object key, Object value) {
+    public Reply rightPush(Object key, Object value) {
         return this.send(Command.createRightPushCommand(key, value));
     }
 
-    public Result rightPop(Object key) {
+    public Reply rightPop(Object key) {
         return this.send(Command.createRightPopCommand(key));
     }
 
-    public Result type(Object key) {
+    public Reply type(Object key) {
         return this.send(Command.createTypeCommand(key));
     }
 
-    public Result quit() {
+    public Reply quit() {
         return this.send(Command.createQuitCommand());
     }
 

@@ -21,98 +21,19 @@ import java.util.stream.Collectors;
 public class MiniDBServer {
     private static final Logger logger = new Logger(MiniDBServer.class);
 
-    private final EventLoop loop;
-    private final ConcurrentMap<Object, Object> MiniDB = new ConcurrentHashMap<>();
-    private final Deque<Object> EMPTY = new LinkedList<>();
+    private static final int DB_SIZE = 16;
+    private static final ConcurrentMap<Object, Object>[] MiniDBs;
+    private static final Deque<Object> EMPTY = new LinkedList<>();
 
-    public MiniDBServer(EventLoop loop) {
-        this.loop = loop;
-    }
-
-    @SuppressWarnings("unchecked")
-    public Result processCommand(Command command) {
-        switch (command.getType()) {
-            case PING: {
-                return Result.ok("PONG");
-            }
-            case KEYS: {
-                var pattern = (String) command.getExtras();
-                Pattern p = Pattern.compile(pattern);
-                return Result.ok(MiniDB.keySet().stream().filter(key -> {
-                    Matcher matcher = p.matcher(key.toString());
-                    return matcher.matches();
-                }).collect(Collectors.toList()));
-            }
-            case GET: {
-                return Result.ok(MiniDB.get(command.getExtras()));
-            }
-            case SET: {
-                var entry = (Map.Entry) command.getExtras();
-                MiniDB.put(entry.getKey(), entry.getValue());
-                return Result.ok(entry);
-            }
-            case EXISTS: {
-                return Result.ok(MiniDB.containsKey(command.getExtras()) ? "YES" : "NO");
-            }
-            case DEL: {
-                return Result.ok(MiniDB.remove(command.getExtras()));
-            }
-            case LEN: {
-                var result = (Deque) MiniDB.getOrDefault(command.getExtras(), EMPTY);
-                return Result.ok(result.size());
-            }
-            case EXPIRE: {
-                var entry = (Map.Entry<Object, Long>) command.getExtras();
-                this.loop.defer(() -> MiniDB.remove(entry.getKey()), entry.getValue());
-                return Result.ok("OK");
-            }
-            case FIRST: {
-                var result = (Deque) MiniDB.getOrDefault(command.getExtras(), EMPTY);
-                return Result.ok(result.peekFirst());
-            }
-            case LAST: {
-                var result = (Deque) MiniDB.getOrDefault(command.getExtras(), EMPTY);
-                return Result.ok(result.peekLast());
-            }
-            case LPUSH: {
-                // TODO: PUSH A LIST OF ELEMENTS
-                var entry = (Map.Entry) command.getExtras();
-                MiniDB.putIfAbsent(entry.getKey(), new ConcurrentLinkedDeque<>());
-                return Result.ok(((Deque) MiniDB.compute(entry.getKey(), (key, val) -> {
-                    ((Deque) val).addFirst(entry.getValue());
-                    return val;
-                })).size());
-            }
-            case LPOP: {
-                return Result.ok(((Deque) MiniDB.getOrDefault(command.getExtras(), EMPTY)).pollFirst());
-            }
-            case RPUSH: {
-                var entry = (Map.Entry) command.getExtras();
-                MiniDB.putIfAbsent(entry.getKey(), new ConcurrentLinkedDeque<>());
-                return Result.ok(((Deque) MiniDB.compute(entry.getKey(), (key, val) -> {
-                    ((Deque) val).addLast(entry.getValue());
-                    return val;
-                })).size());
-            }
-            case RPOP: {
-                return Result.ok(((Deque) MiniDB.getOrDefault(command.getExtras(), EMPTY)).pollLast());
-            }
-            case TYPE: {
-                var value = MiniDB.get(command.getExtras());
-                return Result.ok(value == null ? null : value.getClass().getCanonicalName());
-            }
-            case QUIT: {
-                return Result.QUITTING;
-            }
-            default: {
-                return Result.UNKNOWN_COMMAND;
-            }
+    static {
+        MiniDBs = new ConcurrentHashMap[DB_SIZE];
+        for (int i = 0; i < DB_SIZE; i++) {
+            MiniDBs[i] = new ConcurrentHashMap<>();
         }
     }
 
     public static void main(String... args) throws IOException {
         final var loop = EventLoop.create();
-        final var server = new MiniDBServer(loop);
         // TODO get port from args
         loop.listen(9000, new NIOServerSocketHandler() {
             @Override
@@ -130,12 +51,117 @@ public class MiniDBServer {
                             var oos = new ObjectOutputStream(socket.getOutputStream());
                             var ois = new ObjectInputStream(socket.getInputStream());
                     ) {
+                        var db = MiniDBs[0];
                         while (!socket.isClosed()) {
                             Command command = (Command) ois.readObject();
-                            var result = server.processCommand(command);
-                            oos.writeObject(result);
+                            Reply reply;
+                            switch (command.getType()) {
+                                case PING: {
+                                    reply = Reply.PONG;
+                                    break;
+                                }
+                                case SELECT: {
+                                    var index = (Integer) command.getExtras();
+                                    if (index < MiniDBs.length) {
+                                        db = MiniDBs[index];
+                                        reply = Reply.OK;
+                                    } else {
+                                        reply = Reply.fail("Invalid index " + index);
+                                    }
+                                    break;
+                                }
+                                case KEYS: {
+                                    var pattern = (String) command.getExtras();
+                                    Pattern p = Pattern.compile(pattern);
+                                    reply = Reply.ok(db.keySet().stream().filter(key -> {
+                                        Matcher matcher = p.matcher(key.toString());
+                                        return matcher.matches();
+                                    }).collect(Collectors.toList()));
+                                    break;
+                                }
+                                case GET: {
+                                    reply = Reply.ok(db.get(command.getExtras()));
+                                    break;
+                                }
+                                case SET: {
+                                    var entry = (Map.Entry) command.getExtras();
+                                    db.put(entry.getKey(), entry.getValue());
+                                    reply = Reply.ok(entry);
+                                    break;
+                                }
+                                case EXISTS: {
+                                    reply = Reply.ok(db.containsKey(command.getExtras()) ? "YES" : "NO");
+                                    break;
+                                }
+                                case DEL: {
+                                    reply = Reply.ok(db.remove(command.getExtras()));
+                                    break;
+                                }
+                                case LEN: {
+                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY);
+                                    reply = Reply.ok(results.size());
+                                    break;
+                                }
+                                case EXPIRE: {
+                                    final var entry = (Map.Entry<Object, Long>) command.getExtras();
+                                    final var frozenDB = db;
+                                    loop.defer(() -> frozenDB.remove(entry.getKey()), entry.getValue());
+                                    reply = Reply.OK;
+                                    break;
+                                }
+                                case FIRST: {
+                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY);
+                                    reply = Reply.ok(results.peekFirst());
+                                    break;
+                                }
+                                case LAST: {
+                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY);
+                                    reply = Reply.ok(results.peekLast());
+                                    break;
+                                }
+                                case LPUSH: {
+                                    // TODO: PUSH A LIST OF ELEMENTS
+                                    var entry = (Map.Entry) command.getExtras();
+                                    db.putIfAbsent(entry.getKey(), new ConcurrentLinkedDeque<>());
+                                    reply = Reply.ok(((Deque) db.compute(entry.getKey(), (key, val) -> {
+                                        ((Deque) val).addFirst(entry.getValue());
+                                        return val;
+                                    })).size());
+                                    break;
+                                }
+                                case LPOP: {
+                                    reply = Reply.ok(((Deque) db.getOrDefault(command.getExtras(), EMPTY)).pollFirst());
+                                    break;
+                                }
+                                case RPUSH: {
+                                    var entry = (Map.Entry) command.getExtras();
+                                    db.putIfAbsent(entry.getKey(), new ConcurrentLinkedDeque<>());
+                                    reply = Reply.ok(((Deque) db.compute(entry.getKey(), (key, val) -> {
+                                        ((Deque) val).addLast(entry.getValue());
+                                        return val;
+                                    })).size());
+                                    break;
+                                }
+                                case RPOP: {
+                                    reply = Reply.ok(((Deque) db.getOrDefault(command.getExtras(), EMPTY)).pollLast());
+                                    break;
+                                }
+                                case TYPE: {
+                                    var value = db.get(command.getExtras());
+                                    reply = Reply.ok(value == null ? null : value.getClass().getCanonicalName());
+                                    break;
+                                }
+                                case QUIT: {
+                                    reply = Reply.QUITTING;
+                                    break;
+                                }
+                                default: {
+                                    reply = Reply.UNKNOWN_COMMAND;
+                                }
+                            }
+                            oos.writeObject(reply);
                             oos.flush();
-                            if (result == Result.QUITTING) return;
+                            if (reply == Reply.QUITTING) return;
                         }
                     } catch (Exception e) {
                         logger.error(e);
