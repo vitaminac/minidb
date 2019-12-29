@@ -2,6 +2,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.AbstractMap;
 
 public class MiniDBConnector implements AutoCloseable {
     private final Socket socket;
@@ -26,63 +27,94 @@ public class MiniDBConnector implements AutoCloseable {
     }
 
     public Reply ping() {
-        return this.send(Command.createPingCommand());
+        return this.send(Command.PING);
     }
 
     public Reply select(int index) {
-        return this.send(Command.createSelectCommand(index));
+        return this.send(new Command(Command.CommandType.SELECT, index));
     }
 
     public Reply keys(String pattern) {
-        return this.send(Command.createKeysCommand(pattern));
+        return this.send(new Command(Command.CommandType.KEYS, pattern));
     }
 
     public Reply get(Object key) {
-        return this.send(Command.createGetCommand(key));
+        return this.send(new Command(Command.CommandType.GET, key));
     }
 
     public Reply set(Object key, Object value) {
-        return this.send(Command.createSetCommand(key, value));
+        return this.send(new Command(Command.CommandType.SET, new AbstractMap.SimpleEntry<>(key, value)));
     }
 
     public Reply delete(Object key) {
-        return this.send(Command.createDelCommand(key));
+        return this.send(new Command(Command.CommandType.DEL, key));
     }
 
     public Reply exists(Object key) {
-        return this.send(Command.createExistsCommand(key));
+        return this.send(new Command(Command.CommandType.EXISTS, key));
     }
 
     public Reply expire(Object key, long milliseconds) {
-        return this.send(Command.createExpireCommand(key, milliseconds));
+        return this.send(new Command(Command.CommandType.EXPIRE, new AbstractMap.SimpleEntry<>(key, milliseconds)));
+    }
+
+    public Reply hkeys(Object key, String pattern) {
+        return this.send(new Command(Command.CommandType.HKEYS, new AbstractMap.SimpleEntry<>(key, pattern)));
+    }
+
+    public Reply hget(Object key, Object hkey) {
+        return this.send(new Command(Command.CommandType.HGET, new AbstractMap.SimpleEntry<>(key, hkey)));
+    }
+
+    public Reply hset(Object key, Object hkey, Object hvalue) {
+        return this.send(
+                new Command(Command.CommandType.HSET,
+                        new AbstractMap.SimpleEntry<>(key, new AbstractMap.SimpleEntry<>(hkey, hvalue)))
+        );
+    }
+
+    public Reply hexists(Object key, Object hkey) {
+        return this.send(new Command(Command.CommandType.HEXISTS, new AbstractMap.SimpleEntry<>(key, hkey)));
+    }
+
+    public Reply hdelete(Object key, Object hkey) {
+        return this.send(new Command(Command.CommandType.HDEL, new AbstractMap.SimpleEntry<>(key, hkey)));
     }
 
     public Reply length(Object key) {
-        return this.send(Command.createLengthCommand(key));
+        return this.send(new Command(Command.CommandType.LEN, key));
+    }
+
+    public Reply first(Object key) {
+        return this.send(new Command(Command.CommandType.FIRST, key));
+    }
+
+    public Reply last(Object key) {
+        return this.send(new Command(Command.CommandType.LAST, key));
     }
 
     public Reply leftPush(Object key, Object value) {
-        return this.send(Command.createLeftPushCommand(key, value));
+        return this.send(new Command(Command.CommandType.LPUSH, new AbstractMap.SimpleEntry<>(key, value)));
     }
 
     public Reply leftPop(Object key) {
-        return this.send(Command.createLeftPopCommand(key));
+        return this.send(new Command(Command.CommandType.LPOP, key));
     }
 
     public Reply rightPush(Object key, Object value) {
-        return this.send(Command.createRightPushCommand(key, value));
+        return this.send(new Command(Command.CommandType.RPUSH, new AbstractMap.SimpleEntry<>(key, value)));
     }
 
     public Reply rightPop(Object key) {
-        return this.send(Command.createRightPopCommand(key));
+        return this.send(new Command(Command.CommandType.RPOP, key));
     }
 
     public Reply type(Object key) {
-        return this.send(Command.createTypeCommand(key));
+        return this.send(new Command(Command.CommandType.TYPE, key));
     }
 
     public Reply quit() {
-        return this.send(Command.createQuitCommand());
+        return this.send(Command.QUIT);
     }
 
     public boolean isAlive() {
@@ -91,10 +123,12 @@ public class MiniDBConnector implements AutoCloseable {
 
     @Override
     public void close() throws IOException {
-        this.socket.shutdownInput();
-        this.socket.shutdownOutput();
-        this.oos.close();
-        this.ois.close();
-        this.socket.close();
+        if (!this.socket.isClosed()) {
+            this.socket.shutdownInput();
+            this.socket.shutdownOutput();
+            this.oos.close();
+            this.ois.close();
+            this.socket.close();
+        }
     }
 }

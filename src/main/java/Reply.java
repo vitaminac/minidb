@@ -33,5 +33,7 @@ public class Reply implements Serializable {
     public static final Reply UNKNOWN_COMMAND = Reply.fail("ERROR: Unknown Command");
     public static final Reply QUITTING = Reply.ok("QUITTING");
     public static final Reply OK = Reply.ok("OK");
+    public static final Reply YES = Reply.ok("YES");
+    public static final Reply NO = Reply.ok("NO");
     public static final Reply PONG = Reply.ok("PONG");
 }

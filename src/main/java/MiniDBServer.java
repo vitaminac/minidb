@@ -8,9 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentMap;
@@ -23,7 +21,8 @@ public class MiniDBServer {
 
     private static final int DB_SIZE = 16;
     private static final ConcurrentMap<Object, Object>[] MiniDBs;
-    private static final Deque<Object> EMPTY = new LinkedList<>();
+    private static final Deque<Object> EMPTY_LIST = new LinkedList<>();
+    private static final Map<Object, Object> EMPTY_DICT = new HashMap<>();
 
     static {
         MiniDBs = new ConcurrentHashMap[DB_SIZE];
@@ -90,16 +89,11 @@ public class MiniDBServer {
                                     break;
                                 }
                                 case EXISTS: {
-                                    reply = Reply.ok(db.containsKey(command.getExtras()) ? "YES" : "NO");
+                                    reply = db.containsKey(command.getExtras()) ? Reply.YES : Reply.NO;
                                     break;
                                 }
                                 case DEL: {
                                     reply = Reply.ok(db.remove(command.getExtras()));
-                                    break;
-                                }
-                                case LEN: {
-                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY);
-                                    reply = Reply.ok(results.size());
                                     break;
                                 }
                                 case EXPIRE: {
@@ -109,13 +103,66 @@ public class MiniDBServer {
                                     reply = Reply.OK;
                                     break;
                                 }
+                                case HKEYS: {
+                                    var entry = (Map.Entry<Object, String>) command.getExtras();
+                                    Pattern p = Pattern.compile(entry.getValue());
+                                    reply = Reply.ok(
+                                            ((Map<Object, Object>) (db.getOrDefault(entry.getKey(), EMPTY_DICT)))
+                                                    .keySet()
+                                                    .stream()
+                                                    .filter(key -> {
+                                                        Matcher matcher = p.matcher(key.toString());
+                                                        return matcher.matches();
+                                                    }).collect(Collectors.toList()));
+                                    break;
+                                }
+                                case HGET: {
+                                    var entry = (Map.Entry) command.getExtras();
+                                    reply = Reply.ok(
+                                            ((Map) (db.getOrDefault(entry.getKey(), EMPTY_DICT))).get(entry.getValue())
+                                    );
+                                    break;
+                                }
+                                case HSET: {
+                                    var entry = (Map.Entry) command.getExtras();
+                                    var hentry = (Map.Entry) entry.getValue();
+                                    db.compute(entry.getKey(), (key, htable) -> {
+                                        if (htable == null) {
+                                            htable = new ConcurrentHashMap();
+                                        }
+                                        ((Map) htable).put(hentry.getKey(), hentry.getValue());
+                                        return htable;
+                                    });
+                                    reply = Reply.OK;
+                                    break;
+                                }
+                                case HEXISTS: {
+                                    var entry = (Map.Entry) command.getExtras();
+                                    var htable = (Map) db.get(entry.getKey());
+                                    reply = htable != null && htable.containsKey(entry.getValue()) ? Reply.YES : Reply.NO;
+                                    break;
+                                }
+                                case HDEL: {
+                                    var entry = (Map.Entry) command.getExtras();
+                                    db.computeIfPresent(entry.getKey(), (key, htable) -> {
+                                        ((Map) htable).remove(entry.getValue());
+                                        return htable;
+                                    });
+                                    reply = Reply.OK;
+                                    break;
+                                }
+                                case LEN: {
+                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY_LIST);
+                                    reply = Reply.ok(results.size());
+                                    break;
+                                }
                                 case FIRST: {
-                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY);
+                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY_LIST);
                                     reply = Reply.ok(results.peekFirst());
                                     break;
                                 }
                                 case LAST: {
-                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY);
+                                    var results = (Deque) db.getOrDefault(command.getExtras(), EMPTY_LIST);
                                     reply = Reply.ok(results.peekLast());
                                     break;
                                 }
@@ -130,7 +177,7 @@ public class MiniDBServer {
                                     break;
                                 }
                                 case LPOP: {
-                                    reply = Reply.ok(((Deque) db.getOrDefault(command.getExtras(), EMPTY)).pollFirst());
+                                    reply = Reply.ok(((Deque) db.getOrDefault(command.getExtras(), EMPTY_LIST)).pollFirst());
                                     break;
                                 }
                                 case RPUSH: {
@@ -143,7 +190,7 @@ public class MiniDBServer {
                                     break;
                                 }
                                 case RPOP: {
-                                    reply = Reply.ok(((Deque) db.getOrDefault(command.getExtras(), EMPTY)).pollLast());
+                                    reply = Reply.ok(((Deque) db.getOrDefault(command.getExtras(), EMPTY_LIST)).pollLast());
                                     break;
                                 }
                                 case TYPE: {

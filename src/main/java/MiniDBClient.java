@@ -54,9 +54,23 @@ public class MiniDBClient {
                             } else {
                                 reply = Reply.EXPIRE_SYNTAX_ERROR;
                             }
+                        } else if (command.equals(Command.CommandType.HKEYS.name())) {
+                            reply = conn.hkeys(tokenizer.nextToken(), tokenizer.nextToken());
+                        } else if (command.equals(Command.CommandType.HGET.name())) {
+                            reply = conn.hget(tokenizer.nextToken(), tokenizer.nextToken());
+                        } else if (command.equals(Command.CommandType.HSET.name())) {
+                            reply = conn.hset(tokenizer.nextToken(), tokenizer.nextToken(), tokenizer.nextToken());
+                        } else if (command.equals(Command.CommandType.HEXISTS.name())) {
+                            reply = conn.hexists(tokenizer.nextToken(), tokenizer.nextToken());
+                        } else if (command.equals(Command.CommandType.HDEL.name())) {
+                            reply = conn.hdelete(tokenizer.nextToken(), tokenizer.nextToken());
                         } else if (command.equals(Command.CommandType.LEN.name())) {
                             var key = tokenizer.nextToken();
                             reply = conn.length(key);
+                        } else if (command.equals(Command.CommandType.FIRST.name())) {
+                            reply = conn.first(tokenizer.nextToken());
+                        } else if (command.equals(Command.CommandType.LAST.name())) {
+                            reply = conn.last(tokenizer.nextToken());
                         } else if (command.equals(Command.CommandType.LPUSH.name())) {
                             var key = tokenizer.nextToken();
                             var value = tokenizer.nextToken();
@@ -75,8 +89,8 @@ public class MiniDBClient {
                             var key = tokenizer.nextToken();
                             reply = conn.type(key);
                         } else if (command.equals(Command.CommandType.QUIT.name())) {
-                            conn.quit();
-                            return;
+                            reply = conn.quit();
+                            conn.close();
                         } else {
                             reply = Reply.fail("ERR: Unknown Command " + command);
                         }

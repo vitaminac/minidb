@@ -54,6 +54,11 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 * EXISTS
 * DEL
 * EXPIRE
+* HKEYS
+* HGET
+* HSET
+* HEXISTS
+* HDEL
 * LEN
 * FIRST
 * LAST
