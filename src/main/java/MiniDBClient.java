@@ -62,6 +62,9 @@ public class MiniDBClient {
                         } else if (command.equals(Command.CommandType.RPOP.name())) {
                             var key = tokenizer.nextToken();
                             result = conn.rightPop(key);
+                        } else if (command.equals(Command.CommandType.TYPE.name())) {
+                            var key = tokenizer.nextToken();
+                            result = conn.type(key);
                         } else if (command.equals(Command.CommandType.QUIT.name())) {
                             result = conn.quit();
                         } else {

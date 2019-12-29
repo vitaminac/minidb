@@ -60,6 +60,7 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 * LPOP
 * RPUSH
 * RPOP
+* TYPE
 * QUIT
 
 ## Reference

@@ -17,6 +17,7 @@ public class Command implements Serializable {
         LPOP,
         RPUSH,
         RPOP,
+        TYPE,
         QUIT
     }
 
@@ -82,6 +83,10 @@ public class Command implements Serializable {
 
     public static Command createRightPopCommand(Object key) {
         return new Command(CommandType.RPOP, key);
+    }
+
+    public static Command createTypeCommand(Object key) {
+        return new Command(CommandType.TYPE, key);
     }
 
     public static Command createQuitCommand() {

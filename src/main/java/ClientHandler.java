@@ -119,6 +119,11 @@ public class ClientHandler implements Runnable {
                         oos.writeObject(Result.ok(((Deque) MINIDB.getOrDefault(command.getExtras(), EMPTY)).pollLast()));
                         break;
                     }
+                    case TYPE: {
+                        var value = MINIDB.get(command.getExtras());
+                        oos.writeObject(Result.ok(value == null ? null : value.getClass().getCanonicalName()));
+                        break;
+                    }
                     case QUIT: {
                         oos.writeObject(Result.ok("Quitting"));
                         this.socket.shutdownInput();
