@@ -98,7 +98,6 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 - [ ] [CMU 15-445/645: DATABASE SYSTEMS](https://15445.courses.cs.cmu.edu)
 - [ ] [Coursera: Database Management Essentials](https://www.coursera.org/learn/database-management)
 - [ ] [Coursera: Database Systems Specialization](https://www.coursera.org/specializations/database-systems)
-- [ ] [Coursera: Parallel, Concurrent, and Distributed Programming in Java Specialization](https://www.coursera.org/specializations/pcdp)
 
 ## Source Code
 
