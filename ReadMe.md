@@ -71,7 +71,6 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 
 ## Reference
 
-- [ ] [Redis first commit](https://github.com/antirez/redis/tree/ed9b544e10b84cd43348ddfab7068b610a5df1f7)
 - [ ] [Redis源码分析](https://www.kancloud.cn/digest/redis-code/199030)
 - [ ] [Redis-Code](https://github.com/linyiqun/Redis-Code)
 - [ ] [Redis 源码解析](https://redissrc.readthedocs.io/en/latest/)
