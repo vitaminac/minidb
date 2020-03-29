@@ -86,6 +86,7 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 - [ ] Fundamentals of Database Systems
 - [ ] [Database Management Systems](http://pages.cs.wisc.edu/~dbbook/)
 - [ ] [Database Systems: The Complete Book](http://infolab.stanford.edu/~ullman/dscb.html)
+- [ ] [Bigtable: A Distributed Storage System for Structured Data](https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf)
 
 ## Course
 
@@ -95,6 +96,7 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 - [ ] [Stanford CS 245: Principles of Data-Intensive Systems](http://web.stanford.edu/class/cs245/)
 - [ ] [Stanford CS 346: Database System Implementation](https://web.stanford.edu/class/cs346)
 - [ ] [CMU 15-445/645: DATABASE SYSTEMS](https://15445.courses.cs.cmu.edu)
+- [ ] [CMU 15-721: Advanced Database Systems](https://15721.courses.cs.cmu.edu/)
 - [ ] [Coursera: Database Management Essentials](https://www.coursera.org/learn/database-management)
 - [ ] [Coursera: Database Systems Specialization](https://www.coursera.org/specializations/database-systems)
 
@@ -108,6 +110,8 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 * [Postgres](https://github.com/postgres/postgres)
 * [MySQL](https://github.com/mysql/mysql-server)
 * [MongoDB](https://github.com/mongodb/mongo)
+* [LevelDB](https://github.com/google/leveldb)
+* [RocksDB](https://github.com/facebook/rocksdb)
 * [etcd](https://github.com/etcd-io/etcd)
 * [TiDB](https://github.com/pingcap/tidb)
 * [Neo4j](https://github.com/neo4j/neo4j)
