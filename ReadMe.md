@@ -102,18 +102,30 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 
 ## Source Code
 
-* [Redis](https://github.com/antirez/redis)
-* [KeyDB](https://github.com/JohnSully/KeyDB)
-* [RocketMQ](https://github.com/apache/rocketmq)
-* [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
-* [SQLite](https://sqlite.org/src/)
-* [Postgres](https://github.com/postgres/postgres)
-* [MySQL](https://github.com/mysql/mysql-server)
-* [MongoDB](https://github.com/mongodb/mongo)
-* [LevelDB](https://github.com/google/leveldb)
-* [RocksDB](https://github.com/facebook/rocksdb)
-* [etcd](https://github.com/etcd-io/etcd)
-* [TiDB](https://github.com/pingcap/tidb)
-* [Neo4j](https://github.com/neo4j/neo4j)
-* [BoltDB](https://github.com/boltdb/bolt)
-* [TinyDB](https://github.com/msiemens/tinydb)
+* RDBMS
+  * [MySQL](https://github.com/mysql/mysql-server)
+  * [Postgres](https://github.com/postgres/postgres)
+  * [SQLite](https://sqlite.org/src/)
+  * [MariaDB](https://github.com/MariaDB/server)
+* Key-Value
+  * [Redis](https://github.com/antirez/redis)
+  * [KeyDB](https://github.com/JohnSully/KeyDB)
+  * [Voldemort](https://github.com/voldemort/voldemort)
+  * [Memcached](https://github.com/memcached/memcached)
+  * [LevelDB](https://github.com/google/leveldb)
+  * [RocksDB](https://github.com/facebook/rocksdb)
+  * [etcd](https://github.com/etcd-io/etcd)
+  * [BoltDB](https://github.com/boltdb/bolt)
+* Document-Oriented
+  * [MongoDB](https://github.com/mongodb/mongo)
+  * [TinyDB](https://github.com/msiemens/tinydb)
+* Graph
+  * [Neo4j](https://github.com/neo4j/neo4j)
+* Columnar
+  * [Apache Cassandra](https://github.com/apache/cassandra)
+  * [Apache HBase](https://github.com/apache/hbase)
+* Message Queue
+  * [RocketMQ](https://github.com/apache/rocketmq)
+  * [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
+* NeqSQL
+  * [TiDB](https://github.com/pingcap/tidb)
