@@ -47,16 +47,16 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 目前支持的命令有
 
 * PING
-* SELECT
-* KEYS
+* SELECT db(0-15)
+* KEYS regex
 * GET
 * SET
 * EXISTS
 * DEL
-* EXPIRE
+* EXPIRE key milliseconds
 * HKEYS
-* HGET
-* HSET
+* HGET key field
+* HSET key field value
 * HEXISTS
 * HDEL
 * LEN
