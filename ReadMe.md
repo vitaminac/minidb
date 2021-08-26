@@ -124,6 +124,7 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 * Columnar
   * [Apache Cassandra](https://github.com/apache/cassandra)
   * [Apache HBase](https://github.com/apache/hbase)
+  * [ClickHouse](https://github.com/ClickHouse/ClickHouse)
 * Message Queue
   * [RocketMQ](https://github.com/apache/rocketmq)
   * [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
