@@ -128,5 +128,6 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 * Message Queue
   * [RocketMQ](https://github.com/apache/rocketmq)
   * [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
-* NeqSQL
+* NewSQL
   * [TiDB](https://github.com/pingcap/tidb)
+  * [TDengine](https://github.com/taosdata/TDengine)
