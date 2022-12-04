@@ -83,8 +83,8 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 - [ ] Database System Concepts
 - [ ] Inside SQLite
 - [ ] [Architecture of a Database System](http://db.cs.berkeley.edu/papers/fntdb07-architecture.pdf)
-- [ ] Fundamentals of Database Systems
 - [ ] Database Systems: A Practical Approach to Design, Implementation, and Management
+- [ ] Fundamentals of Database Systems
 - [ ] [Database Management Systems](http://pages.cs.wisc.edu/~dbbook/)
 - [ ] [Database Systems: The Complete Book](http://infolab.stanford.edu/~ullman/dscb.html)
 - [ ] [Bigtable: A Distributed Storage System for Structured Data](https://static.googleusercontent.com/media/research.google.com/en//archive/bigtable-osdi06.pdf)
