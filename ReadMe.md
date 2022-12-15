@@ -133,3 +133,7 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 * NewSQL
   * [TiDB](https://github.com/pingcap/tidb)
   * [TDengine](https://github.com/taosdata/TDengine)
+* Query Engine
+  * [Presto](https://github.com/prestodb/presto)
+  * [Apache Hive](https://github.com/apache/hive)
+  * [Apache Spark](https://github.com/apache/spark)
