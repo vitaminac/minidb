@@ -130,6 +130,7 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
   * [RocketMQ](https://github.com/apache/rocketmq)
   * [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
   * [Apache Kafka](https://github.com/apache/kafka)
+  * [Pika](https://github.com/pika/pika)
 * NewSQL
   * [TiDB](https://github.com/pingcap/tidb)
   * [TDengine](https://github.com/taosdata/TDengine)
