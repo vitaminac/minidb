@@ -107,6 +107,7 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
 
 * [DB Browser for SQLite](https://github.com/sqlitebrowser/sqlitebrowser)
 * [SQLiteStudio](https://github.com/pawelsalawa/sqlitestudio)
+* [pgAdmin 4](https://github.com/pgadmin-org/pgadmin4)
 
 ### Databse
 
