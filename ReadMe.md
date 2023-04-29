@@ -134,11 +134,6 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
   * [Apache Cassandra](https://github.com/apache/cassandra)
   * [Apache HBase](https://github.com/apache/hbase)
   * [ClickHouse](https://github.com/ClickHouse/ClickHouse)
-* Message Queue
-  * [RocketMQ](https://github.com/apache/rocketmq)
-  * [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
-  * [Apache Kafka](https://github.com/apache/kafka)
-  * [Pika](https://github.com/pika/pika)
 * NewSQL
   * [TiDB](https://github.com/pingcap/tidb)
   * [TDengine](https://github.com/taosdata/TDengine)
@@ -146,3 +141,10 @@ lookupCommand -> 根据字符来查找相应命令的实现函数
   * [Presto](https://github.com/prestodb/presto)
   * [Apache Hive](https://github.com/apache/hive)
   * [Apache Spark](https://github.com/apache/spark)
+
+### Message Queue
+
+* [RocketMQ](https://github.com/apache/rocketmq)
+* [RabbitMQ](https://github.com/rabbitmq/rabbitmq-server)
+* [Apache Kafka](https://github.com/apache/kafka)
+* [Pika](https://github.com/pika/pika)
